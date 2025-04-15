@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ChatGPTKW - Kemal Wiryawan Maksudnya..</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.0/purify.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="chat-wrapper">
+      <div class="chat-header">Hola Cheapskate</div>
+      <div class="chat-window d-flex flex-column" id="chat-window"></div>
+      <div class="chat-input-container">
+        <div id="attachment-preview" class="mb-2"></div>
+        <form id="chat-form">
+          <textarea
+            id="chat-input"
+            rows="1"
+            class="form-control bg-dark text-white"
+            placeholder="Ketik sesuatu..."></textarea>
+          <div class="d-flex align-items-center gap-2 mt-2">
+            <label for="file-input" class="btn btn-sm btn-outline-light"
+              >📎 Lampirkan</label
+            >
+            <input type="file" id="file-input" class="d-none" />
+            <button
+              type="button"
+              class="btn btn-outline-warning ms-auto"
+              id="resetChat">
+              🔁 Reset
+            </button>
+            <button type="submit" class="btn btn-success">Kirim</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        let history = [];
+
+        const scrollToBottom = () =>
+          $("#chat-window").scrollTop($("#chat-window")[0].scrollHeight);
+
+        const toBase64 = (file) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+          });
+        };
+
+        const showLoader = (id) => {
+          $("#chat-window").append(
+            `<div class="chat-bubble ai-bubble" id="${id}">⏳ Memproses...</div>`
+          );
+          scrollToBottom();
+        };
+
+        $("#chat-form").submit(async function (e) {
+          e.preventDefault();
+
+          const message = $("#chat-input").val().trim();
+          const file = $("#file-input")[0].files[0];
+          if (!message && !file) return;
+
+          if (message) {
+            $("#chat-window").append(
+              `<div class="chat-bubble user-bubble">${message}</div>`
+            );
+            history.push({ role: "user", content: message });
+          }
+
+          $("#chat-input").val("");
+          $("#file-input").val("");
+          $("#attachment-preview").empty();
+
+          const loaderId = "loader-" + Date.now();
+          showLoader(loaderId);
+
+          let payload = { messages: history };
+
+          if (file) {
+            const image = await toBase64(file);
+            payload.image_url = image;
+            payload.prompt = message || "Analisis gambar ini";
+          } else if (/gambar|buat gambar|image|ilustrasi|logo/i.test(message)) {
+            payload.generate_image = true;
+            payload.prompt = message;
+            delete payload.messages;
+          }
+
+          fetch("https://round-cake-a592.mkemalw.workers.dev", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              $(`#${loaderId}`).remove();
+              const response = data.response;
+
+              if (response.startsWith("http")) {
+                $("#chat-window").append(
+                  `<div class="chat-bubble ai-bubble"><img src="${response}" class="img-fluid rounded"/></div>`
+                );
+              } else {
+                const html = DOMPurify.sanitize(marked.parse(response));
+                $("#chat-window").append(
+                  `<div class="chat-bubble ai-bubble">${html}</div>`
+                );
+                history.push({ role: "assistant", content: response });
+                hljs.highlightAll();
+              }
+              scrollToBottom();
+            })
+            .catch(() => {
+              $(`#${loaderId}`).remove();
+              $("#chat-window").append(
+                `<div class="chat-bubble ai-bubble text-danger">❌ Error dalam memproses request.</div>`
+              );
+              scrollToBottom();
+            });
+        });
+
+        $("#file-input").change(function () {
+          const file = this.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            $("#attachment-preview").html(`
+        <div class="bg-dark p-2 text-light rounded d-flex align-items-center">
+          <img src="${e.target.result}" style="width:50px;height:auto" class="rounded me-2"/>
+          <button type="button" class="btn-close btn-close-white" id="remove-preview"></button>
+        </div>`);
+            $("#remove-preview").click(() => {
+              $("#file-input").val("");
+              $("#attachment-preview").empty();
+            });
+          };
+          reader.readAsDataURL(file);
+        });
+
+        $("#chat-input")
+          .keydown((e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              $("#chat-form").submit();
+            }
+          })
+          .on("input", function () {
+            $(this).css({ height: "auto", height: this.scrollHeight + "px" });
+          });
+
+        $("#resetChat").click(() => {
+          $("#chat-window").empty();
+          history = [];
+        });
+      });
+    </script>
+  </body>
+</html>
