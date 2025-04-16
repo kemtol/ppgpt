@@ -92,7 +92,7 @@
             // Menampilkan gambar dan teks jika keduanya ada
             $("#chat-window").append(
               `<div class="chat-bubble user-bubble">
-        <img src="${image}" class="user-uploaded mb-2"/><br/>
+        <img src="${image}" class="user-uploaded mb-2 w-50" />
         ${message ? `<div>${DOMPurify.sanitize(message)}</div>` : ""}
       </div>`
             );
@@ -176,6 +176,7 @@
             $("#remove-preview").click(() => {
               $("#file-input").val("");
               $("#attachment-preview").empty();
+              $("#chat-input").focus(); // Memfokuskan kembali ke textarea setelah menambahkan lampiran
             });
             $("#chat-input").focus(); // Memfokuskan kembali ke textarea setelah menambahkan lampiran
           };
