@@ -17,14 +17,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.0/purify.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link rel="stylesheet" href="style.css" />
-    <style>
-      
-    </style>
+    <style></style>
   </head>
   <body>
     <div class="chat-wrapper">
-      <div class="chat-header">Hola Cheapskate</div>
+      <div class="chat-header">🤖 Hola Cheapskate</div>
+      <!--<div class="chat-header">🍉 Free Palestine</div>-->
       <div class="chat-window d-flex flex-column" id="chat-window"></div>
       <div class="chat-input-container fixed-bottom m-3 border-0">
         <div id="attachment-preview" class="mb-2"></div>
@@ -32,20 +34,22 @@
           <textarea
             id="chat-input"
             rows="1"
-            class="form-control bg-dark text-white border-0 mb-3"
+            class="form-control bg-dark text-white border-0 mb-2"
             placeholder="Ketik sesuatu..."></textarea>
-          <div class="d-flex align-items-center gap-2 mt-2">
-            <label for="file-input" class="btn btn-sm btn-outline-light"
-              >📎 Lampirkan</label
-            >
+          <div class="d-flex align-items-center gap-2 d-flex align-items-center gap-2 m-2 mb-0">
+            <label for="file-input" class="btn btn-sm">
+              <i class="fas fas-large fa-paperclip text-white"></i
+            ></label>
             <input type="file" id="file-input" class="d-none" />
             <button
               type="button"
-              class="btn btn-outline-warning ms-auto"
+              class="btn btn-sm ms-auto"
               id="resetChat">
-              🔁 Reset
+              <i class="fas fas-large fa-rotate text-white"></i>
             </button>
-            <button type="submit" class="btn btn-success">Kirim</button>
+            <button type="submit" class="btn btn-sm">
+              <i class="fas fas-large fa-paper-plane text-white"></i>
+            </button>
           </div>
         </form>
       </div>
