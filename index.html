@@ -19,40 +19,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.0/purify.min.js"></script>
     <link rel="stylesheet" href="style.css" />
     <style>
-      .loading-circle {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #3498db;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        animation: spin 1s linear infinite;
-      }
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-      img.user-uploaded {
-        width: 200px;
-        height: auto;
-        border-radius: 8px;
-      }
+      
     </style>
   </head>
   <body>
     <div class="chat-wrapper">
       <div class="chat-header">Hola Cheapskate</div>
       <div class="chat-window d-flex flex-column" id="chat-window"></div>
-      <div class="chat-input-container">
+      <div class="chat-input-container fixed-bottom m-3 border-0">
         <div id="attachment-preview" class="mb-2"></div>
         <form id="chat-form">
           <textarea
             id="chat-input"
             rows="1"
-            class="form-control bg-dark text-white"
+            class="form-control bg-dark text-white border-0 mb-3"
             placeholder="Ketik sesuatu..."></textarea>
           <div class="d-flex align-items-center gap-2 mt-2">
             <label for="file-input" class="btn btn-sm btn-outline-light"
