@@ -55,10 +55,11 @@ body {
 }
 
 .chat-bubble {
-  max-width: 85%;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1.5rem;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  padding: 0.875rem 1.125rem;
   border-radius: 12px;
+  line-height: 1.6;
   word-wrap: break-word;
 }
 
@@ -72,6 +73,9 @@ body {
   padding: 0.75rem;
   border-radius: 8px;
   overflow-x: auto;
+  font-family: monospace;
+  font-size: var(--font-size-code); /* pakai var utk konsistensi */
+  line-height: 1.5;
 }
 
 .chat-bubble code {
@@ -80,12 +84,17 @@ body {
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
   font-family: monospace;
+  font-size: var(--font-size-code); /* pakai var utk konsistensi */
+  line-height: 1.5;
 }
 
 .chat-bubble pre code {
   padding: 0;
   background: none;
   color: inherit;
+  font-family: monospace;
+  font-size: var(--font-size-code); /* pakai var utk konsistensi */
+  line-height: 1.5;
 }
 
 .chat-bubble ul,
