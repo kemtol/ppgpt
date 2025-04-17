@@ -45,10 +45,13 @@
   </head>
   <body>
     <div class="chat-wrapper">
-      <div class="chat-header position-absolute top-0 start-0 end-0">
-        🤖 Hola Cheapskate
-      </div>
-      <!--<div class="chat-header">🍉 Free Palestine</div>-->
+      <div id="chatHeader" class="chat-header position-absolute top-0 start-0 end-0"></div>
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          const messages = ["🤖 Hola Cheapskate","🍉 Free Palestine"];
+          document.getElementById("chatHeader").textContent = messages[Math.floor(Math.random() * messages.length)];
+        });
+      </script>
       <div class="chat-window d-flex flex-column" id="chat-window"></div>
       <div class="chat-input-container fixed-bottom m-3 border-0 bg-dark">
         <div id="attachment-preview" class="mb-2"></div>
@@ -87,6 +90,15 @@
         const windowHeight = $(window).height();
         let triggerPoint = windowHeight * 0.1; // 10% dari tinggi window
         $("#chat-input").focus();
+
+        function escapeHTML(str) {
+          return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+        }
 
         function countTokens(text) {
           return text.trim().split(/\s+/).length;
@@ -148,32 +160,50 @@
         const scrollToBottom = () =>
           $("#chat-window").scrollTop($("#chat-window")[0].scrollHeight);
 
+
         // Ketika form chat dikirim
         $("#chat-form").submit(async function (e) {
           e.preventDefault();
-
           const message = $("#chat-input").val().trim();
           const file = $("#file-input")[0].files[0];
           if (!message && !file) return;
-
           let payload = {};
+          
+          function isProbablyCode(text) {
+            const codeIndicators = ["<", ">", "{", "}", ";", "function", "const", "let", "var", "if", "else", "</"];
+            return codeIndicators.some(keyword => text.includes(keyword)) || text.includes("\n");
+          }
 
+          // Proses markdown jadi HTML + sanitize
+          const html = DOMPurify.sanitize(marked.parse(message));
           if (file) {
             const image = await toBase64(file);
-            $("#chat-window").append(
-              `<div class="chat-bubble user-bubble">
+            const safeMessage = escapeHTML(message);
+            const formattedMessage = isProbablyCode(message)
+              ? `<pre>${safeMessage}</pre>`
+              : `<div>${safeMessage}</div>`;
+
+            $("#chat-window").append(`
+              <div class="chat-bubble user-bubble">
                 <img src="${image}" class="user-uploaded mb-2 w-50" />
-                ${message ? `<div>${DOMPurify.sanitize(message)}</div>` : ""}
-              </div>`
-            );
+                ${message ? formattedMessage : ""}
+              </div>
+            `);
+
             payload.image_url = image;
             payload.prompt = message || "Analisis gambar ini";
           } else {
-            $("#chat-window").append(
-              `<div class="chat-bubble user-bubble">
-                ${DOMPurify.sanitize(message)}
-              </div>`
-            );
+            const safeMessage = escapeHTML(message);
+            const formattedMessage = isProbablyCode(message)
+              ? `<pre>${safeMessage}</pre>`
+              : `<div>${safeMessage}</div>`;
+
+            $("#chat-window").append(`
+              <div class="chat-bubble user-bubble">
+                ${formattedMessage}
+              </div>
+            `);
+
             history.push({ role: "user", content: message });
             payload.messages = history;
           }
@@ -186,6 +216,9 @@
           $("#file-input").val("");
           $("#attachment-preview").empty();
 
+
+
+          // AI membalas
           fetch("https://round-cake-a592.mkemalw.workers.dev", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -198,29 +231,17 @@
               const cost = data.cost; // Mengambil biaya dari backend
               const model = data.model; // Mengambil informasi model
 
-              if (response.startsWith("http")) {
-                $("#chat-window").append(
-                  `<div class="chat-bubble ai-bubble">
-                    <img src="${response}" class="img-fluid rounded"/>
-                    <span class="cost-info response-cost">Cost: ${cost} using model: ${model}</span>
-                  </div>`
-                );
-              } else {
-                const html = DOMPurify.sanitize(marked.parse(response));
-                $("#chat-window").append(
-                  `<div class="chat-bubble ai-bubble">
-                    ${html}
-                    <span class="cost-info response-cost">Cost: ${cost} using model: ${model}</span>
-                  </div>`
-                );
-                history.push({
-                  role: "assistant",
-                  content: response,
-                  timestamp: new Date().toISOString(),
-                });
-                hljs.highlightAll();
-              }
+              const html = DOMPurify.sanitize(marked.parse(response));
 
+              $("#chat-window").append(`
+                <div class="chat-bubble ai-bubble">
+                  ${html}
+                  <span class="cost-info response-cost">Cost: ${cost} using model: ${model}</span>
+                </div>
+              `);
+
+              hljs.highlightAll(); // Highlight code block
+              history.push({ role: "assistant", content: response });
               scrollToBottom();
               $("#chat-input").focus();
             })
