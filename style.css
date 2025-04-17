@@ -233,8 +233,8 @@ img.user-uploaded {
 
   --font-size-body: clamp(
     0.75rem,
-    0.9vw + 0.45rem,
-    1rem
+    0.1rem + 0.3vw,
+    1.15rem
   ); /* dari 1.125rem -> 1rem */
   --font-size-small: clamp(0.675rem, 0.75vw + 0.25rem, 0.875rem);
 }
