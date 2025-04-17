@@ -62,6 +62,11 @@ body {
   word-wrap: break-word;
 }
 
+.chat-bubble:first-child {
+  margin-top: 4rem; /* Sesuaikan dengan kebutuhan */
+}
+
+
 .chat-bubble pre {
   background-color: #2c2c3a;
   color: #ffffff;
