@@ -328,10 +328,13 @@ a:hover {
 
 ul,
 ol {
-  font-size: var(--font-size-list);
-  padding-left: 1.25rem;
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+  padding-left: 1.5rem; /* atau sesuai kebutuhan */
+  margin-bottom: 1rem;
 }
 
 li {
+  font-size: inherit; /* pastikan mewarisi dari ul/ol */
   margin-bottom: 0.5rem;
 }

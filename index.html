@@ -45,11 +45,14 @@
   </head>
   <body>
     <div class="chat-wrapper">
-      <div id="chatHeader" class="chat-header position-absolute top-0 start-0 end-0"></div>
+      <div
+        id="chatHeader"
+        class="chat-header position-absolute top-0 start-0 end-0"></div>
       <script>
         document.addEventListener("DOMContentLoaded", function () {
-          const messages = ["🤖 Hola Cheapskate","🍉 Free Palestine"];
-          document.getElementById("chatHeader").textContent = messages[Math.floor(Math.random() * messages.length)];
+          const messages = ["🤖 Hola Cheapskate", "🍉 Free Palestine"];
+          document.getElementById("chatHeader").textContent =
+            messages[Math.floor(Math.random() * messages.length)];
         });
       </script>
       <div class="chat-window d-flex flex-column" id="chat-window"></div>
@@ -160,7 +163,6 @@
         const scrollToBottom = () =>
           $("#chat-window").scrollTop($("#chat-window")[0].scrollHeight);
 
-
         // Ketika form chat dikirim
         $("#chat-form").submit(async function (e) {
           e.preventDefault();
@@ -168,10 +170,26 @@
           const file = $("#file-input")[0].files[0];
           if (!message && !file) return;
           let payload = {};
-          
+
           function isProbablyCode(text) {
-            const codeIndicators = ["<", ">", "{", "}", ";", "function", "const", "let", "var", "if", "else", "</"];
-            return codeIndicators.some(keyword => text.includes(keyword)) || text.includes("\n");
+            const codeIndicators = [
+              "<",
+              ">",
+              "{",
+              "}",
+              ";",
+              "function",
+              "const",
+              "let",
+              "var",
+              "if",
+              "else",
+              "</",
+            ];
+            return (
+              codeIndicators.some((keyword) => text.includes(keyword)) ||
+              text.includes("\n")
+            );
           }
 
           // Proses markdown jadi HTML + sanitize
@@ -198,11 +216,16 @@
               ? `<pre>${safeMessage}</pre>`
               : `<div>${safeMessage}</div>`;
 
+            const responseId = "response-" + Date.now();
+
             $("#chat-window").append(`
-              <div class="chat-bubble user-bubble">
-                ${formattedMessage}
-              </div>
-            `);
+              <div class="chat-bubble ai-bubble" id="${responseId}">
+                ${html}
+                <span class="cost-info response-cost">Cost: ${cost} using model: ${model}</span>
+              </div>`
+            );
+
+            document.getElementById(responseId)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
             history.push({ role: "user", content: message });
             payload.messages = history;
@@ -215,8 +238,6 @@
           $("#chat-input").val("").css("height", "auto");
           $("#file-input").val("");
           $("#attachment-preview").empty();
-
-
 
           // AI membalas
           fetch("https://round-cake-a592.mkemalw.workers.dev", {
@@ -242,7 +263,11 @@
 
               hljs.highlightAll(); // Highlight code block
               history.push({ role: "assistant", content: response });
-              scrollToBottom();
+              // ⬇️ Tambahkan ini untuk auto-scroll ke bubble AI
+              document.getElementById(responseId)?.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+              });              
               $("#chat-input").focus();
             })
             .catch((err) => {
@@ -321,7 +346,12 @@
 
         // Hotkey handler (Ctrl + Shift + N)
         $(document).keydown(function (e) {
-          if (e.ctrlKey && e.shiftKey && e.altKey && e.key.toLowerCase() === "n") {
+          if (
+            e.ctrlKey &&
+            e.shiftKey &&
+            e.altKey &&
+            e.key.toLowerCase() === "n"
+          ) {
             nerdMode = !nerdMode;
             $("#nerd-stats").toggle(nerdMode);
             console.log(`🧠 Nerd Stat ${nerdMode ? "Aktif" : "Nonaktif"}`);
