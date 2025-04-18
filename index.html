@@ -45,7 +45,7 @@
         });
       </script>
       <div class="chat-window d-flex flex-column" id="chat-window"></div>
-      
+
       <!-- Chat input -->
       <div class="chat-input-container fixed-bottom m-3 border-0 bg-dark">
         <div id="attachment-preview"></div>
@@ -91,6 +91,8 @@
         const $chatHeader = $(".chat-header");
         const $chatWindow = $(".chat-window");
         const windowHeight = $(window).height();
+        // Mendeteksi ukuran layar
+        const width = $(window).width();
         let triggerPoint = windowHeight * 0.1; // 10% dari tinggi window
         $("#chat-input").focus();
 
@@ -222,7 +224,9 @@
             `);
 
             history.push({ role: "user", content: message });
-            const userMessages = history.filter(msg => msg.role === "user").length;
+            const userMessages = history.filter(
+              (msg) => msg.role === "user"
+            ).length;
             if (userMessages === 3) {
               showPGOverlay();
             }
@@ -267,7 +271,10 @@
                 behavior: "smooth",
                 block: "start",
               });
-              $("#chat-input").focus();
+              if (width > 768) {
+                // 768px adalah ukuran layar desktop
+                $("#chat-input").focus(); // Fokus ke textarea hanya untuk desktop
+              }
             })
             .catch((err) => {
               $(`#${loaderId}`).remove();
@@ -278,7 +285,10 @@
                 </div>`
               );
               scrollToBottom();
-              $("#chat-input").focus();
+              if (width > 768) {
+                // 768px adalah ukuran layar desktop
+                $("#chat-input").focus(); // Fokus ke textarea hanya untuk desktop
+              }
             });
         });
 
@@ -340,7 +350,10 @@
           $("#chat-window").empty();
           history = [];
           localStorage.removeItem("chat_audit"); // Clear local audit
-          $("#chat-input").focus();
+          if (width > 768) {
+            // 768px adalah ukuran layar desktop
+            $("#chat-input").focus(); // Fokus ke textarea hanya untuk desktop
+          }
         });
 
         // Hotkey handler (Ctrl + Shift + N)
@@ -361,8 +374,8 @@
         // Show PG topup
         function showPGOverlay() {
           fetch("https://your-cloudflare-worker-url.workers.dev") // Ganti dengan URL kamu
-            .then(res => res.json())
-            .then(data => {
+            .then((res) => res.json())
+            .then((data) => {
               const pg = data.pg || "paypal";
               const country = data.country || "Unknown";
 
@@ -375,7 +388,9 @@
               $("#pg-overlay").removeClass("d-none");
             })
             .catch(() => {
-              $("#pg-overlay-body").html(`<p class="text-danger">Gagal mendeteksi lokasi.</p>`);
+              $("#pg-overlay-body").html(
+                `<p class="text-danger">Gagal mendeteksi lokasi.</p>`
+              );
               $("#pg-overlay").removeClass("d-none");
             });
         }
@@ -384,7 +399,6 @@
         $(document).on("click", "#close-overlay", function () {
           $("#pg-overlay").addClass("d-none");
         });
-
       });
     </script>
   </body>
