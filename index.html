@@ -21,22 +21,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link rel="stylesheet" href="style.css" />
-    <style>
-      .cost-info {
-        font-size: 0.8em;
-        color: #888;
-        margin-top: 4px;
-        display: block;
-      }
 
-      .response-cost {
-        text-align: left;
-      }
-
-      .chat-header {
-        transition: opacity 0.5s ease;
-      }
-    </style>
     <div id="nerd-stats">
       <div><strong>🧠 Nerd Stats</strong></div>
       <div id="stat-tokens">Tokens: 0</div>
@@ -48,6 +33,7 @@
 
   <body>
     <div class="chat-wrapper">
+      <!-- Chat window for bubble -->
       <div
         id="chatHeader"
         class="chat-header position-absolute top-0 start-0 end-0"></div>
@@ -59,8 +45,10 @@
         });
       </script>
       <div class="chat-window d-flex flex-column" id="chat-window"></div>
+      
+      <!-- Chat input -->
       <div class="chat-input-container fixed-bottom m-3 border-0 bg-dark">
-        <div id="attachment-preview" class="mb-2"></div>
+        <div id="attachment-preview"></div>
         <form id="chat-form">
           <textarea
             id="chat-input"
@@ -81,6 +69,15 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Overlay PG -->
+    <div id="pg-overlay" class="pg-overlay d-none">
+      <div class="pg-content">
+        <button id="close-overlay" class="btn-close btn-close-white"></button>
+        <h5>Pilih Metode Pembayaran</h5>
+        <div id="pg-overlay-body">Mendeteksi lokasi...</div>
       </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -225,6 +222,10 @@
             `);
 
             history.push({ role: "user", content: message });
+            const userMessages = history.filter(msg => msg.role === "user").length;
+            if (userMessages === 3) {
+              showPGOverlay();
+            }
             payload.messages = history;
           }
 
@@ -308,7 +309,7 @@
           const reader = new FileReader();
           reader.onload = (e) => {
             $("#attachment-preview").html(`
-              <div class="bg-dark p-2 text-light rounded d-flex align-items-center">
+              <div class="bg-dark p-2 text-light rounded d-flex align-items-center mb-2">
                 <img src="${e.target.result}" style="width:50px;height:auto" class="rounded me-2"/>
                 <button type="button" class="btn-close btn-close-white" id="remove-preview"></button>
               </div>`);
@@ -356,6 +357,34 @@
           }
         });
         setInterval(updateNerdStats, 1000);
+
+        // Show PG topup
+        function showPGOverlay() {
+          fetch("https://your-cloudflare-worker-url.workers.dev") // Ganti dengan URL kamu
+            .then(res => res.json())
+            .then(data => {
+              const pg = data.pg || "paypal";
+              const country = data.country || "Unknown";
+
+              const content = `
+                <p>🌍 Lokasi: ${country}</p>
+                <p>Metode Pembayaran: <strong>${pg.toUpperCase()}</strong></p>
+              `;
+
+              $("#pg-overlay-body").html(content);
+              $("#pg-overlay").removeClass("d-none");
+            })
+            .catch(() => {
+              $("#pg-overlay-body").html(`<p class="text-danger">Gagal mendeteksi lokasi.</p>`);
+              $("#pg-overlay").removeClass("d-none");
+            });
+        }
+
+        // Tutup overlay
+        $(document).on("click", "#close-overlay", function () {
+          $("#pg-overlay").addClass("d-none");
+        });
+
       });
     </script>
   </body>
