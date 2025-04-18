@@ -61,6 +61,7 @@ body {
   border-radius: 12px;
   line-height: 1.6;
   word-wrap: break-word;
+  max-width: 90%;
 }
 
 .chat-bubble:first-child {
@@ -237,8 +238,8 @@ img.user-uploaded {
   --font-size-h6: clamp(0.95rem, 1vw + 0.3rem, 1.2rem);   /* ≈ 16.5–20px */
 
   /* BODY TEXT */
-  --font-size-body: clamp(1.075rem, 1vw + 0.4rem, 1.2rem); /* ≈ 17–19px */
-
+  --font-size-body: clamp(1rem, 1vw + 0.2rem, 1.125rem);
+  
   /* SMALL TEXT */
   --font-size-small: clamp(0.95rem, 0.9vw + 0.25rem, 1.05rem); /* ≈ 15–16.5px */
 

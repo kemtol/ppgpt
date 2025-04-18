@@ -28,9 +28,11 @@
         margin-top: 4px;
         display: block;
       }
+
       .response-cost {
         text-align: left;
       }
+
       .chat-header {
         transition: opacity 0.5s ease;
       }
@@ -43,6 +45,7 @@
       <div id="stat-duration">Duration: 0s</div>
     </div>
   </head>
+
   <body>
     <div class="chat-wrapper">
       <div
@@ -202,11 +205,10 @@
               : `<div>${safeMessage}</div>`;
 
             $("#chat-window").append(`
-              <div class="chat-bubble user-bubble">
-                <img src="${image}" class="user-uploaded mb-2 w-50" />
-                ${message ? formattedMessage : ""}
-              </div>
-            `);
+            <div class="chat-bubble user-bubble">
+              ${formattedMessage}
+            </div>
+          `);
 
             payload.image_url = image;
             payload.prompt = message || "Analisis gambar ini";
@@ -216,16 +218,11 @@
               ? `<pre>${safeMessage}</pre>`
               : `<div>${safeMessage}</div>`;
 
-            const responseId = "response-" + Date.now();
-
             $("#chat-window").append(`
-              <div class="chat-bubble ai-bubble" id="${responseId}">
-                ${html}
-                <span class="cost-info response-cost">Cost: ${cost} using model: ${model}</span>
-              </div>`
-            );
-
-            document.getElementById(responseId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+              <div class="chat-bubble mb-3 user-bubble">
+                ${formattedMessage}
+              </div>
+            `);
 
             history.push({ role: "user", content: message });
             payload.messages = history;
@@ -253,9 +250,10 @@
               const model = data.model; // Mengambil informasi model
 
               const html = DOMPurify.sanitize(marked.parse(response));
+              const responseId = "response-" + Date.now();
 
               $("#chat-window").append(`
-                <div class="chat-bubble ai-bubble">
+                <div class="chat-bubble mb-3 ai-bubble" id="${responseId}">
                   ${html}
                   <span class="cost-info response-cost">Cost: ${cost} using model: ${model}</span>
                 </div>
@@ -266,8 +264,8 @@
               // ⬇️ Tambahkan ini untuk auto-scroll ke bubble AI
               document.getElementById(responseId)?.scrollIntoView({
                 behavior: "smooth",
-                block: "start"
-              });              
+                block: "start",
+              });
               $("#chat-input").focus();
             })
             .catch((err) => {
