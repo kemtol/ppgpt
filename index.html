@@ -147,7 +147,11 @@
             }
           });
           hljs.highlightAll();
-          $("#chat-input").focus();
+
+          if (width > 768) {
+            // 768px adalah ukuran layar desktop
+            $("#chat-input").focus(); // Fokus ke textarea hanya untuk desktop
+          }
         }
 
         // Mengatur visibility header dengan efek fade
