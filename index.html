@@ -377,7 +377,7 @@
 
         // Show PG topup
         function showPGOverlay() {
-          fetch("https://your-cloudflare-worker-url.workers.dev") // Ganti dengan URL kamu
+          fetch("https://get-country-location.mkemalw.workers.dev") // Ganti dengan URL kamu
             .then((res) => res.json())
             .then((data) => {
               const pg = data.pg || "paypal";
