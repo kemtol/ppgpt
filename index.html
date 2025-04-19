@@ -76,7 +76,7 @@
     <div id="pg-overlay" class="pg-overlay d-none">
       <div class="pg-content">
         <button id="close-overlay" class="btn-close btn-close-white"></button>
-        <h5>Pilih Metode Pembayaran</h5>
+        <h5 class="fw-bold">Pay As You Chat, No BS!</h5>
         <div id="pg-overlay-body">Mendeteksi lokasi...</div>
       </div>
     </div>
@@ -231,7 +231,7 @@
             const userMessages = history.filter(
               (msg) => msg.role === "user"
             ).length;
-            if (userMessages === 3) {
+            if (userMessages === 1) {
               showPGOverlay();
             }
             payload.messages = history;
@@ -384,8 +384,20 @@
               const country = data.country || "Unknown";
 
               const content = `
-                <p>🌍 Lokasi: ${country}</p>
-                <p>Metode Pembayaran: <strong>${pg.toUpperCase()}</strong></p>
+                <p class="d-none">🌍 ${country}</p>
+                <span class="d-block m-2">🧠</span>
+                    <ul class="list-unstyled">
+                      <li>Kita pakai sistem <strong>Pay Per Use</strong>. Tau ga kalau 1 chat itu cuma 100 - 300 perak.</li>
+                      <li>Ga cuma <strong>GPT</strong>, kita juga kasih akses ke <strong>Gemini, DeepSeek, Claude</strong>, dan lainnya.</li>
+                      <li>Voucher mulai <strong>Rp25.000</strong> masa berlaku 3 bulan. 25.000 dibagi 100 perak itung aja deh.</li>
+                      <li>Ga seperti model langganan, kamu ga bakal ilang value kalau ga dipake.</li>
+                      <li>Ga ada batasan jumlah pertanyaan, tidak ada limit harian.</li>
+                      <li>Ada Mode Hemat, vision, DALL-E, ga pake filter.</li>
+                    </ul>
+
+                  <hr />
+                  <a class="btn btn-primary m-2" href="https://pay.doku.com/p-link/p/MX3cqdGh1S">Beli Voucher Rp 25.000</a>
+                  <a class="btn btn-primary m-2" href="https://pay.doku.com/p-link/p/MX3cqdGh1S">Beli Voucher Rp 50.000</a>
               `;
 
               $("#pg-overlay-body").html(content);
