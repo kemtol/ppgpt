@@ -59,7 +59,7 @@ body {
   border-radius: 12px;
   line-height: 1.6;
   word-wrap: break-word;
-  max-width: 90%;
+  max-width: 95%;
 }
 
 .chat-bubble:first-child {
@@ -142,6 +142,14 @@ body {
   padding: 1rem;
   background-color: #12121c;
   border-radius: 25px;
+}
+
+.chat-input-container .form-control:focus{
+  box-shadow: none;
+}
+
+.chat-input-container  textarea::placeholder {
+  color:#666
 }
 
 .loader {

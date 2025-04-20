@@ -57,10 +57,20 @@
             placeholder="Ketik sesuatu..."></textarea>
           <div
             class="d-flex align-items-center gap-2 d-flex align-items-center gap-2 m-2 mb-0">
+            <button
+              class="btn border rounded-circle btn-sm"
+              style="font-size: 0.7rem">
+              <i class="fas fa-ellipsis-h text-white"></i>
+            </button>
             <label for="file-input" class="btn btn-sm">
               <i class="fas fas-large fa-paperclip text-white"></i>
             </label>
             <input type="file" id="file-input" class="d-none" />
+            <div class="d-flex flex-grow-1 justify-content-center">
+              <button class="btn border rounded-pill text-white btn-sm">
+                🪙 50.000
+              </button>
+            </div>
             <button type="button" class="btn btn-sm ms-auto" id="resetChat">
               <i class="fas fas-large fa-rotate text-white"></i>
             </button>
@@ -385,13 +395,12 @@
               const pg = data.pg || "paypal";
               const country = data.country || "Unknown";
 
-              const content =
-               `<small class="d-block mb-2" style="
+              const content = `<small class="d-block mb-2" style="
     color: #aaa;
 ">its still free tho, just press close</small>
                 <p class="d-none">🌍 ${country}</p>
-                <a class="btn btn-primary m-2" href="https://pay.doku.com/p-link/p/MX3cqdGh1S">Beli Voucher Rp 25.000</a>
-                <a class="btn btn-primary m-2" href="https://pay.doku.com/p-link/p/T9wjjq40wr">Beli Voucher Rp 50.000</a>
+                <a class="btn btn-primary m-2 doku-payment" data-amount="25000" href="#">Beli Voucher Rp 25.000</a>
+                <a class="btn btn-primary m-2 doku-payment" data-amount="50000" href="#">Beli Voucher Rp 50.000</a>
                 <hr />
                 <span class="d-block m-2">🧠</span>
                     <ul class="list-unstyled">
@@ -413,6 +422,44 @@
               $("#pg-overlay").removeClass("d-none");
             });
         }
+
+        $(".doku-payment").on("click", function (e) {
+          e.preventDefault();
+
+          const amount = $(this).data("amount");
+
+          // Optional: Tambahkan loading state
+          const button = $(this);
+          button.text("Loading...").prop("disabled", true);
+
+          $.ajax({
+            url: "https://pg-payment-page.mkemalw.workers.dev/",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+              amount: amount,
+              user_id: "kemal", // ini bisa diganti sesuai sesi login user kamu
+              email: "kemal@example.com", // juga bisa diganti dinamis
+            }),
+            success: function (data) {
+              const redirectUrl = data?.response?.payment?.url;
+              if (redirectUrl) {
+                window.location.href = redirectUrl;
+              } else {
+                alert("Gagal mendapatkan URL pembayaran.");
+              }
+            },
+            error: function (err) {
+              console.error(err);
+              alert("Terjadi kesalahan saat memproses pembayaran.");
+            },
+            complete: function () {
+              button
+                .text("Beli Voucher Rp " + amount.toLocaleString())
+                .prop("disabled", false);
+            },
+          });
+        });
 
         // Tutup overlay
         $(document).on("click", "#close-overlay", function () {
