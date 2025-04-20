@@ -208,7 +208,9 @@
               : `<div>${safeMessage}</div>`;
 
             $("#chat-window").append(`
-            <div class="chat-bubble user-bubble">
+            <img src="${image}" alt="User image" class="m-2 rounded" style="max-width: 320px; align-self: end;
+">
+            <div class="chat-bubble user-bubble mb-3">
               ${formattedMessage}
             </div>
           `);
@@ -385,19 +387,17 @@
 
               const content = `
                 <p class="d-none">🌍 ${country}</p>
+                <a class="btn btn-primary m-2" href="https://pay.doku.com/p-link/p/MX3cqdGh1S">Beli Voucher Rp 25.000</a>
+                <a class="btn btn-primary m-2" href="https://pay.doku.com/p-link/p/T9wjjq40wr">Beli Voucher Rp 50.000</a>
+                <hr />
                 <span class="d-block m-2">🧠</span>
                     <ul class="list-unstyled">
-                      <li>Kita pakai sistem <strong>Pay Per Use</strong>. Tau ga kalau 1 chat itu cuma 100 - 300 perak.</li>
-                      <li>Ga cuma <strong>GPT</strong>, kita juga kasih akses ke <strong>Gemini, DeepSeek, Claude</strong>, dan lainnya.</li>
+                      <li>Tau ga kalau 1 chat itu cuma 100 - 300 perak.</li>
+                      <li>Ga cuma <strong>GPT</strong>, model bisa pakai <strong>Gemini, DeepSeek, Claude</strong>, dan lainnya.</li>
                       <li>Voucher mulai <strong>Rp25.000</strong> masa berlaku 3 bulan. 25.000 dibagi 100 perak itung aja deh.</li>
-                      <li>Ga seperti model langganan, kamu ga bakal ilang value kalau ga dipake.</li>
                       <li>Ga ada batasan jumlah pertanyaan, tidak ada limit harian.</li>
-                      <li>Ada Mode Hemat, vision, DALL-E, ga pake filter.</li>
+                      <li>Ada Mode Hemat, vision, DALL-E, no filter.</li>
                     </ul>
-
-                  <hr />
-                  <a class="btn btn-primary m-2" href="https://pay.doku.com/p-link/p/MX3cqdGh1S">Beli Voucher Rp 25.000</a>
-                  <a class="btn btn-primary m-2" href="https://pay.doku.com/p-link/p/MX3cqdGh1S">Beli Voucher Rp 50.000</a>
               `;
 
               $("#pg-overlay-body").html(content);
