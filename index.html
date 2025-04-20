@@ -243,7 +243,7 @@
             const userMessages = history.filter(
               (msg) => msg.role === "user"
             ).length;
-            if (userMessages === 3) {
+            if (userMessages === 1) {
               showPGOverlay();
             }
             payload.messages = history;
@@ -423,6 +423,7 @@
             });
         }
 
+        //buka doku payment
         $(".doku-payment").on("click", function (e) {
           e.preventDefault();
 
@@ -442,10 +443,13 @@
               email: "kemal@example.com", // juga bisa diganti dinamis
             }),
             success: function (data) {
-              const redirectUrl = data?.response?.payment?.url;
+              console.log("📦 Response dari Worker:", data); // 👈 log isi response
+              const redirectUrl = data?.payment?.url;
               if (redirectUrl) {
+                console.log("🔀 Redirect ke:", redirectUrl); // 👈 log URL tujuan
                 window.location.href = redirectUrl;
               } else {
+                console.warn("⚠️ Gagal dapat payment URL:", data);
                 alert("Gagal mendapatkan URL pembayaran.");
               }
             },
