@@ -57,7 +57,7 @@
             placeholder="Ketik sesuatu..."></textarea>
           <div
             class="d-flex align-items-center gap-2 d-flex align-items-center gap-2 m-2 mb-0">
-            <button
+            <button id="chat-menu" 
               class="btn border rounded-circle btn-sm"
               style="font-size: 0.7rem">
               <i class="fas fa-ellipsis-h text-white"></i>
@@ -67,7 +67,7 @@
             </label>
             <input type="file" id="file-input" class="d-none" />
             <div class="d-flex flex-grow-1 justify-content-center">
-              <button class="btn border rounded-pill text-white btn-sm">
+              <button class="btn border rounded-pill text-white btn-sm" style="min-width: 95px;">
                 🪙 50.000
               </button>
             </div>
@@ -424,11 +424,10 @@
         }
 
         //buka doku payment
-        $(".doku-payment").on("click", function (e) {
+        $(document).on("click", ".doku-payment", function (e) { //pake event delegation karena button baru muncul kemudian
           e.preventDefault();
 
           const amount = $(this).data("amount");
-
           // Optional: Tambahkan loading state
           const button = $(this);
           button.text("Loading...").prop("disabled", true);
