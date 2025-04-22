@@ -21,7 +21,12 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link rel="stylesheet" href="style.css" />
+    <script src="https://jokul.doku.com/jokul-checkout-js/v1/jokul-checkout-1.0.0.js"></script>
 
+  </head>
+
+  <body>
+    <!-- nerd start -->
     <div id="nerd-stats">
       <div><strong>🧠 Nerd Stats</strong></div>
       <div id="stat-tokens">Tokens: 0</div>
@@ -29,9 +34,8 @@
       <div id="stat-messages">Messages: 0</div>
       <div id="stat-duration">Duration: 0s</div>
     </div>
-  </head>
-
-  <body>
+    <!-- //nerd start -->
+    <!-- start chat window -->
     <div class="chat-wrapper">
       <!-- Chat window for bubble -->
       <div
@@ -67,8 +71,8 @@
             </label>
             <input type="file" id="file-input" class="d-none" />
             <div class="d-flex flex-grow-1 justify-content-center">
-              <button class="btn border rounded-pill text-white btn-sm" style="min-width: 95px;">
-                🪙 50.000
+              <button id="buy-coin" class="btn border rounded-pill text-white btn-sm" style="min-width: 95px;">
+                🪙 Buy Coin
               </button>
             </div>
             <button type="button" class="btn btn-sm ms-auto" id="resetChat">
@@ -402,14 +406,13 @@
                 <a class="btn btn-primary m-2 doku-payment" data-amount="25000" href="#">Beli Voucher Rp 25.000</a>
                 <a class="btn btn-primary m-2 doku-payment" data-amount="50000" href="#">Beli Voucher Rp 50.000</a>
                 <hr />
-                <span class="d-block m-2">🧠</span>
-                    <ul class="list-unstyled">
-                      <li>Tau ga kalau 1 chat itu cuma 100 - 300 perak.</li>
-                      <li>Ga cuma <strong>GPT</strong>, model bisa pakai <strong>Gemini, DeepSeek, Claude</strong>, dan lainnya.</li>
-                      <li>Voucher mulai <strong>Rp25.000</strong> masa berlaku 3 bulan. 25.000 dibagi 100 perak itung aja deh.</li>
-                      <li>Ga ada batasan jumlah pertanyaan, tidak ada limit harian.</li>
-                      <li>Ada Mode Hemat, vision, DALL-E, no filter.</li>
-                    </ul>
+                <ul class="list-unstyled">
+                  <li>Tau ga kalau 1 chat itu cuma 100 - 300 perak.</li>
+                  <li>Ga cuma <strong>GPT</strong>, model bisa pakai <strong>Gemini, DeepSeek, Claude</strong>, dan lainnya.</li>
+                  <li>Voucher mulai <strong>Rp25.000</strong> masa berlaku 3 bulan. 25.000 dibagi 100 perak itung aja deh.</li>
+                  <li>Ga ada batasan jumlah pertanyaan, tidak ada limit harian.</li>
+                  <li>Ada Mode Hemat, vision, DALL-E, no filter.</li>
+                </ul>
               `;
 
               $("#pg-overlay-body").html(content);
@@ -423,52 +426,65 @@
             });
         }
 
-        //buka doku payment
-        $(document).on("click", ".doku-payment", function (e) { //pake event delegation karena button baru muncul kemudian
-          e.preventDefault();
-
-          const amount = $(this).data("amount");
-          // Optional: Tambahkan loading state
-          const button = $(this);
+        // buka doku payment
+        /*async function triggerDokuPayment(amount, button) {
           button.text("Loading...").prop("disabled", true);
 
-          $.ajax({
-            url: "https://pg-payment-page.mkemalw.workers.dev/",
-            type: "POST",
-            contentType: "application/json",
-            data: JSON.stringify({
-              amount: amount,
-              user_id: "kemal", // ini bisa diganti sesuai sesi login user kamu
-              email: "kemal@example.com", // juga bisa diganti dinamis
-            }),
-            success: function (data) {
-              console.log("📦 Response dari Worker:", data); // 👈 log isi response
-              const redirectUrl = data?.payment?.url;
-              if (redirectUrl) {
-                console.log("🔀 Redirect ke:", redirectUrl); // 👈 log URL tujuan
-                window.location.href = redirectUrl;
-              } else {
-                console.warn("⚠️ Gagal dapat payment URL:", data);
-                alert("Gagal mendapatkan URL pembayaran.");
-              }
-            },
-            error: function (err) {
-              console.error(err);
-              alert("Terjadi kesalahan saat memproses pembayaran.");
-            },
-            complete: function () {
-              button
-                .text("Beli Voucher Rp " + amount.toLocaleString())
-                .prop("disabled", false);
-            },
-          });
+          try {
+            const res = await fetch("https://pg-payment-page.mkemalw.workers.dev/", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                amount,
+                user_id: "kemal",
+                email: "kemal@example.com",
+                phone: "08120380192",
+              }),
+            });
+
+            const result = await res.json(); // ✅ benerin variabel di sini
+
+            if (result?.response?.payment?.url) {
+              window.location.href = result.response.payment.url;
+            } else {
+              alert("Gagal mendapatkan URL pembayaran.");
+              console.warn("Detail:", result);
+              console.log("DOKU Error Message:", result.response?.error?.message || result.response);
+            }
+
+          } catch (error) {
+            alert("Terjadi kesalahan saat memproses pembayaran.");
+            console.error("💥 Error:", error);
+          } finally {
+            button.text("Beli Voucher Rp " + amount.toLocaleString()).prop("disabled", false);
+          }
+        }
+
+        // buat semua tombol class dan id pakai fungsi yang sama
+        $(document).on("click", ".doku-payment", function (e) {
+          e.preventDefault();
+          const amount = $(this).data("amount");
+          triggerDokuPayment(amount, $(this));
         });
+
+        $("#buy-coin").click(function () {
+          triggerDokuPayment(10000, $(this));
+        });*/
+
+        
+
 
         // Tutup overlay
         $(document).on("click", "#close-overlay", function () {
           $("#pg-overlay").addClass("d-none");
         });
       });
+
+      var checkoutButton = document.getElementById('buy-coin');
+        // Example: the payment page will show when the button is clicked
+        checkoutButton.addEventListener('click', function () {
+            loadJokulCheckout('https://jokul.doku.com/checkout/link/SU5WFDferd561dfasfasdfae123c20200510090550775'); // Replace it with the response.payment.url you retrieved from the response
+        });
     </script>
   </body>
 </html>
