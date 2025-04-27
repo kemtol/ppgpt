@@ -27,7 +27,7 @@
 
   <body>
     <!-- Popup Install -->
-    <div id="install-popup" >
+    <div id="install-popup" class="d-none" >
       <p>Pasang aplikasi ini ke layar utama untuk pengalaman terbaik!</p>
       <button id="install-button" class="btn btn-success">Install App</button>
       <button id="close-popup" class="btn btn-danger">Tutup</button>
@@ -475,51 +475,6 @@
             console.log('ServiceWorker registration failed: ', error);
           });
       }
-    </script>
-    <!-- PWA enforce -->
-    <script>
-      let deferredPrompt;
-      
-      // Cek apakah event 'beforeinstallprompt' didukung
-      $(window).on('beforeinstallprompt', function(e) {
-        e.preventDefault(); // Mencegah browser menampilkan prompt otomatis
-        deferredPrompt = e.originalEvent; // Menyimpan event untuk digunakan nanti
-        
-        // Tampilkan popup install jika belum diinstall
-        $('#install-popup').show();
-    
-        // Tampilkan tombol install
-        $('#install-button').on('click', function() {
-          if (deferredPrompt) {
-            deferredPrompt.prompt(); // Tampilkan prompt untuk install aplikasi
-            deferredPrompt.userChoice.then(function(choiceResult) {
-              if (choiceResult.outcome === 'accepted') {
-                console.log('User accepted install');
-              } else {
-                console.log('User dismissed install');
-              }
-              deferredPrompt = null; // Reset deferredPrompt setelah digunakan
-            });
-          }
-        });
-      });
-    
-      // Cek apakah aplikasi sudah dalam mode standalone (sudah diinstall)
-      const isInStandaloneMode = () => ('standalone' in navigator && navigator.standalone);
-      const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
-    
-      // Cek apakah aplikasi sudah diinstall dan bukan perangkat iOS
-      if (!isInStandaloneMode() && !isIos) {
-        $(document).ready(function() {
-          $('#install-popup').show();
-        });
-      }
-    
-      // Menambahkan fungsi untuk menutup popup
-      $('#close-popup').on('click', function() {
-        $('#install-popup').hide();
-      });
-    </script>
-    
+    </script>    
   </body>
 </html>
