@@ -122,6 +122,21 @@ body {
   font-size: clamp(1.05rem, 0.8vw + 0.4rem, 1.2rem);
 }
 
+.ai-bubble table{
+  width: 100%;
+}
+
+.ai-bubble thead{
+  background: #111;
+}
+
+tbody, td, tfoot, th, thead, tr {
+  border-width: 1px;
+  border-color: #444;
+  padding: 0.25rem;
+}
+
+
 .cost-info {
   font-size: 0.8em;
   color: #888;
