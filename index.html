@@ -287,7 +287,7 @@
           })
             .then((res) => res.json())
             .then((data) => {
-              $(`#${loaderId}`).remove();
+              //$(`#${loaderId}`).remove();
               const response = data.response;
               const cost = data.cost; // Mengambil biaya dari backend
               const model = data.model; // Mengambil informasi model
@@ -340,11 +340,17 @@
           });
         };
 
-        // Menampilkan loader selama menunggu respon
+        // Menampilkan loader berupa iklan
         const showLoader = (id) => {
           $("#chat-window").append(
-            `<div class="chat-bubble ai-bubble" style="background:transparent!important" id="${id}">
-              <div class="loading-circle"></div>
+            `<div class="chat-bubble ads-bubble mb-3" id="${id}">
+              <div class="d-flex ad-container text-center">
+                <div class="p-2"><img src="/img/ads-20250231.jpg" class="rounded-circle" alt="Iklan Loading" style="max-width: 75px;height: auto;/* border-radius: 0!important; */"></div>
+                <div class="p-2 flex-grow-1 text-start">
+                  <strong>Cakra Autoworks</strong>
+                  <p class="small">Sponsored Content</p>
+                </div>
+              </div>
             </div>`
           );
           scrollToBottom();

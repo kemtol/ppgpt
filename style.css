@@ -141,6 +141,28 @@ body {
   font-size: var(--font-size-body);
 }
 
+.ads-bubble {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin: auto;
+  width: 75%;
+}
+
+.ads-bubble .ad-container {
+  background: transparent;
+  border-radius: 0;
+  border-bottom: 1px solid #333;
+  border-top: 1px #333 solid;
+}
+
+/* Responsive: Full width on mobile */
+@media (max-width: 480px) {
+  .ads-bubble {
+    width: 100%;
+  }
+}
+
 .ai-bubble {
   align-self: start;
   background-color: #2c2c3a;
