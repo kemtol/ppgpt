@@ -58,41 +58,54 @@
   </div>
 
   <script>
-    let selectedPrice = null;
-  
     $(document).ready(function () {
+      let selectedPrice = null;
+    
       $('.voucher-option').on('click', function () {
         $('.voucher-option').removeClass('active');
         $(this).addClass('active');
         selectedPrice = $(this).data('price');
       });
-  
+    
       $('#pay-button').on('click', function () {
         if (!selectedPrice) {
           alert('Pilih nominal voucher dulu ya!');
           return;
         }
-  
+    
+        $('#pay-button').attr('disabled', true).text('Memproses...');
+    
         $.ajax({
           url: 'https://pg-payment-page.mkemalw.workers.dev/',
           method: 'POST',
           contentType: 'application/json',
           data: JSON.stringify({ amount: selectedPrice }),
           success: function (data) {
+            console.log('Response dari Worker:', data);
+    
             if (data && data.qrisUrl) {
-                $('#qris-image').attr('src', data.qrisUrl);
-                $('#qris-section').show();
+              $('#qris-image').attr('src', data.qrisUrl);
+              $('#qris-section').show();
+              alert('QRIS berhasil dibuat, silakan scan!');
+            } else if (data && data.curl) {
+              console.warn('Gagal dapat QRIS, CURL untuk debug:');
+              console.log(data.curl);
+              alert('Gagal mendapatkan QRIS. Cek console untuk CURL debug.');
             } else {
-                console.log('Error from iPaymu:', data);  // Log error untuk debugging
-                alert('Gagal mendapatkan QRIS. Coba lagi.');
+              console.error('Response tidak dikenali:', data);
+              alert('Terjadi error yang tidak diketahui.');
             }
           },
-          error: function () {
+          error: function (xhr, status, error) {
+            console.error('Ajax error:', status, error);
             alert('Terjadi kesalahan saat menghubungi server.');
+          },
+          complete: function () {
+            $('#pay-button').attr('disabled', false).text('Bayar dengan QRIS');
           }
         });
       });
     });
-  </script>
+    </script>
 </body>
 </html>
