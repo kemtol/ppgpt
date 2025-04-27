@@ -26,6 +26,14 @@
   </head>
 
   <body>
+    <!-- Popup Install -->
+    <div id="install-popup" >
+      <p>Tambahkan aplikasi ini ke layar utama untuk pengalaman terbaik!</p>
+      <p id="install-message">Tambahkan aplikasi ini ke layar utama untuk pengalaman terbaik!</p>
+      <button id="install-button" class="btn-primary d-none">Install</button>
+      <button id="close-popup" class="btn" >Tutup</button>
+    </div>
+
     <!-- nerd start -->
     <div id="nerd-stats">
       <div><strong>🧠 Nerd Stats</strong></div>
@@ -95,6 +103,9 @@
       </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script src="pwa-detection.js"></script>
+    
     <script>
       $(document).ready(function () {
         //init
@@ -105,6 +116,22 @@
         const $chatHeader = $(".chat-header");
         const $chatWindow = $(".chat-window");
         const windowHeight = $(window).height();
+        // PWA popup enforce
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+          // Aplikasi sudah ditambahkan ke layar utama, tidak perlu tampilkan popup
+        } else {
+          // Tampilkan popup setelah halaman dimuat
+          setTimeout(function() {
+            $('#install-popup').fadeIn(); // Menggunakan fadeIn untuk animasi
+          }, 1000); // Popup muncul setelah 1 detik
+        }
+
+        // Tombol untuk menutup popup
+        $('#close-popup').on('click', function() {
+          $('#install-popup').fadeOut(); // Menggunakan fadeOut untuk animasi
+        });
+
+
         // Mendeteksi ukuran layar
         const width = $(window).width();
         let triggerPoint = windowHeight * 0.1; // 10% dari tinggi window
@@ -425,55 +452,7 @@
               $("#pg-overlay").removeClass("d-none");
             });
         }
-
-        // buka doku payment
-        /*async function triggerDokuPayment(amount, button) {
-          button.text("Loading...").prop("disabled", true);
-
-          try {
-            const res = await fetch("https://pg-payment-page.mkemalw.workers.dev/", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                amount,
-                user_id: "kemal",
-                email: "kemal@example.com",
-                phone: "08120380192",
-              }),
-            });
-
-            const result = await res.json(); // ✅ benerin variabel di sini
-
-            if (result?.response?.payment?.url) {
-              window.location.href = result.response.payment.url;
-            } else {
-              alert("Gagal mendapatkan URL pembayaran.");
-              console.warn("Detail:", result);
-              console.log("DOKU Error Message:", result.response?.error?.message || result.response);
-            }
-
-          } catch (error) {
-            alert("Terjadi kesalahan saat memproses pembayaran.");
-            console.error("💥 Error:", error);
-          } finally {
-            button.text("Beli Voucher Rp " + amount.toLocaleString()).prop("disabled", false);
-          }
-        }
-
-        // buat semua tombol class dan id pakai fungsi yang sama
-        $(document).on("click", ".doku-payment", function (e) {
-          e.preventDefault();
-          const amount = $(this).data("amount");
-          triggerDokuPayment(amount, $(this));
-        });
-
-        $("#buy-coin").click(function () {
-          triggerDokuPayment(10000, $(this));
-        });*/
-
-        
-
-
+  
         // Tutup overlay
         $(document).on("click", "#close-overlay", function () {
           $("#pg-overlay").addClass("d-none");
@@ -498,33 +477,47 @@
           });
       }
     </script>
-    <!-- PWA enforce-->
+    <!-- PWA enforce -->
     <script>
       let deferredPrompt;
-    
+
+      // Cek sebelum install dan tangani event
       $(window).on('beforeinstallprompt', function(e) {
-        e.preventDefault();
-        deferredPrompt = e.originalEvent;
-    
+        e.preventDefault(); // Mencegah browser menampilkan prompt secara otomatis
+        deferredPrompt = e.originalEvent; // Menyimpan event untuk digunakan nanti
+
+        // Buat tombol Install secara manual
         const $installButton = $('<button>')
           .text('Install App')
           .addClass('btn btn-success position-fixed bottom-0 end-0 m-4')
           .appendTo('body');
-    
+
+        // Ketika tombol install diklik
         $installButton.on('click', function() {
           if (deferredPrompt) {
-            deferredPrompt.prompt();
+            deferredPrompt.prompt(); // Menampilkan prompt untuk install
             deferredPrompt.userChoice.then(function(choiceResult) {
               if (choiceResult.outcome === 'accepted') {
                 console.log('User accepted install');
               } else {
                 console.log('User dismissed install');
               }
-              deferredPrompt = null;
+              deferredPrompt = null; // Reset deferredPrompt setelah digunakan
             });
           }
         });
       });
+
+      // Cek apakah aplikasi sudah dalam mode standalone (sudah di-install)
+      const isInStandaloneMode = () => ('standalone' in navigator && navigator.standalone);
+      const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+
+      if (!isInStandaloneMode() && !isIos) {
+        // Tampilkan popup install jika aplikasi belum di-install dan bukan iOS
+        $(document).ready(function() {
+          $('#install-popup').show();
+        });
+      }
     </script>
   </body>
 </html>
