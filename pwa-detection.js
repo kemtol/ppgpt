@@ -1,41 +1,85 @@
 let deferredPrompt;
 
-// Fungsi untuk mendeteksi apakah pengguna menggunakan perangkat mobile
+// Fungsi untuk mendeteksi apakah perangkat mobile
 const isMobileDevice = () => {
     return /android|iphone|ipad|ipod|windows phone/i.test(navigator.userAgent.toLowerCase());
 };
 
-// Cek apakah perangkat adalah iOS dan apakah aplikasi sudah diinstall
+// Deteksi iOS
 const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
-const isInStandaloneMode = () => ('standalone' in navigator && navigator.standalone);
 
-// Menangani event 'beforeinstallprompt' hanya di perangkat yang mendukung PWA (bukan iOS)
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault(); // Mencegah dialog default browser
-  deferredPrompt = e; // Simpan event untuk digunakan nanti
-  
-  // Cek apakah aplikasi belum diinstall dan perangkat bukan iOS
-  if (!isInStandaloneMode() && isMobileDevice() && !isIos) {
-    console.log('Aplikasi belum diinstall. Tampilkan popup.');
-    
-    // Tampilkan popup untuk install jika aplikasi belum diinstall
-    document.getElementById('install-popup').style.display = 'block';
-  }
-});
+// Deteksi apakah sudah PWA
+const isInStandaloneMode = () => (
+    window.matchMedia('(display-mode: standalone)').matches || 
+    (window.navigator.standalone === true)
+);
 
-// Handle tombol install di popup
+// Fungsi untuk menampilkan popup install
+function showInstallPopup() {
+    const popup = document.getElementById('install-popup');
+    if (popup) {
+        popup.classList.remove('d-none');
+        popup.style.display = 'block';
+    }
+}
+
+// Fungsi untuk menyembunyikan popup install
+function hideInstallPopup() {
+    const popup = document.getElementById('install-popup');
+    if (popup) {
+        popup.style.display = 'none';
+    }
+}
+
+// Kalau sudah PWA, tidak perlu apa-apa
+if (isInStandaloneMode()) {
+    console.log('✅ Sudah dalam mode PWA');
+    hideInstallPopup();
+} else {
+    console.log('⚠️ Belum dalam mode PWA');
+
+    if (isIos) {
+        // iOS tidak support beforeinstallprompt
+        console.log('📱 iOS detected. Tampilkan instruksi manual.');
+
+        // Tampilkan popup khusus iOS
+        showInstallPopup();
+
+        // Ganti isi popup kalau mau kasih instruksi iOS
+        document.getElementById('install-popup').querySelector('p').innerHTML = `
+            Untuk iPhone/iPad: Tekan tombol <strong>Bagikan</strong> lalu pilih <strong>Tambahkan ke Layar Utama</strong>.
+        `;
+        document.getElementById('install-button').style.display = 'none'; // Hide tombol install karena iOS manual
+    } else {
+        // Android dan browser yang support beforeinstallprompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallPopup();
+        });
+
+        // Jika 3 detik tidak ada beforeinstallprompt, tetap tampilkan popup
+        setTimeout(() => {
+            if (!deferredPrompt) {
+                console.log('⏳ beforeinstallprompt tidak muncul, tetap tampilkan popup.');
+                showInstallPopup();
+            }
+        }, 3000);
+    }
+}
+
+// Tombol Install
 document.getElementById('install-button')?.addEventListener('click', () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt(); // Tampilkan prompt install
-    
-    deferredPrompt.userChoice.then((choiceResult) => {
-      console.log(choiceResult.outcome); // Hasil dari user (accepted atau dismissed)
-      deferredPrompt = null; // Reset deferredPrompt setelah digunakan
-    });
-  }
-});
-
-// Handle tombol close pada popup (opsional)
-document.getElementById('close-popup')?.addEventListener('click', () => {
-  document.getElementById('install-popup').style.display = 'none'; // Menutup popup
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('✅ User accepted install');
+            } else {
+                console.log('❌ User dismissed install');
+            }
+            deferredPrompt = null;
+        });
+    }
+    hideInstallPopup();
 });
