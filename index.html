@@ -28,10 +28,9 @@
   <body>
     <!-- Popup Install -->
     <div id="install-popup" >
-      <p>Tambahkan aplikasi ini ke layar utama untuk pengalaman terbaik!</p>
-      <p id="install-message">Tambahkan aplikasi ini ke layar utama untuk pengalaman terbaik!</p>
-      <button id="install-button" class="btn-primary d-none">Install</button>
-      <button id="close-popup" class="btn" >Tutup</button>
+      <p>Pasang aplikasi ini ke layar utama untuk pengalaman terbaik!</p>
+      <button id="install-button" class="btn btn-success">Install App</button>
+      <button id="close-popup" class="btn btn-danger">Tutup</button>
     </div>
 
     <!-- nerd start -->
@@ -480,22 +479,19 @@
     <!-- PWA enforce -->
     <script>
       let deferredPrompt;
-
-      // Cek sebelum install dan tangani event
+      
+      // Cek apakah event 'beforeinstallprompt' didukung
       $(window).on('beforeinstallprompt', function(e) {
-        e.preventDefault(); // Mencegah browser menampilkan prompt secara otomatis
+        e.preventDefault(); // Mencegah browser menampilkan prompt otomatis
         deferredPrompt = e.originalEvent; // Menyimpan event untuk digunakan nanti
-
-        // Buat tombol Install secara manual
-        const $installButton = $('<button>')
-          .text('Install App')
-          .addClass('btn btn-success position-fixed bottom-0 end-0 m-4')
-          .appendTo('body');
-
-        // Ketika tombol install diklik
-        $installButton.on('click', function() {
+        
+        // Tampilkan popup install jika belum diinstall
+        $('#install-popup').show();
+    
+        // Tampilkan tombol install
+        $('#install-button').on('click', function() {
           if (deferredPrompt) {
-            deferredPrompt.prompt(); // Menampilkan prompt untuk install
+            deferredPrompt.prompt(); // Tampilkan prompt untuk install aplikasi
             deferredPrompt.userChoice.then(function(choiceResult) {
               if (choiceResult.outcome === 'accepted') {
                 console.log('User accepted install');
@@ -507,17 +503,23 @@
           }
         });
       });
-
-      // Cek apakah aplikasi sudah dalam mode standalone (sudah di-install)
+    
+      // Cek apakah aplikasi sudah dalam mode standalone (sudah diinstall)
       const isInStandaloneMode = () => ('standalone' in navigator && navigator.standalone);
       const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
-
+    
+      // Cek apakah aplikasi sudah diinstall dan bukan perangkat iOS
       if (!isInStandaloneMode() && !isIos) {
-        // Tampilkan popup install jika aplikasi belum di-install dan bukan iOS
         $(document).ready(function() {
           $('#install-popup').show();
         });
       }
+    
+      // Menambahkan fungsi untuk menutup popup
+      $('#close-popup').on('click', function() {
+        $('#install-popup').hide();
+      });
     </script>
+    
   </body>
 </html>
