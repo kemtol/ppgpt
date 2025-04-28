@@ -14,72 +14,52 @@ const isInStandaloneMode = () => (
     (window.navigator.standalone === true)
 );
 
-// Fungsi untuk menampilkan popup install
-function showInstallPopup() {
-    const popup = document.getElementById('install-popup');
-    if (popup) {
-        popup.classList.remove('d-none');
-        popup.style.display = 'block';
-    }
-}
+// Fungsi untuk menampilkan bubble install di chat
+function showInstallBubble() {
+    const chatWindow = document.getElementById('chat-window');
+    if (!chatWindow) return;
 
-// Fungsi untuk menyembunyikan popup install
-function hideInstallPopup() {
-    const popup = document.getElementById('install-popup');
-    if (popup) {
-        popup.style.display = 'none';
-    }
-}
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble ai-bubble mb-3';
 
-// Kalau sudah PWA, tidak perlu apa-apa
-if (isInStandaloneMode()) {
-    console.log('✅ Sudah dalam mode PWA');
-    hideInstallPopup();
-} else {
-    console.log('⚠️ Belum dalam mode PWA');
-
-    if (isIos) {
-        // iOS tidak support beforeinstallprompt
-        console.log('📱 iOS detected. Tampilkan instruksi manual.');
-
-        // Tampilkan popup khusus iOS
-        showInstallPopup();
-
-        // Ganti isi popup kalau mau kasih instruksi iOS
-        document.getElementById('install-popup').querySelector('p').innerHTML = `
-            Untuk iPhone/iPad: Tekan tombol <strong>Bagikan</strong> lalu pilih <strong>Tambahkan ke Layar Utama</strong>.
+    if (isInStandaloneMode()) {
+        // Kalau sudah PWA, cuma sapa saja
+        console.log('✅ Sudah dalam mode PWA, tampilkan sapaan saja.');
+        bubble.innerHTML = `
+            <div>👋 Hai! Selamat datang di aplikasi kami!</div>
         `;
-        document.getElementById('install-button').style.display = 'none'; // Hide tombol install karena iOS manual
     } else {
-        // Android dan browser yang support beforeinstallprompt
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            showInstallPopup();
-        });
+        // Kalau belum PWA, tawarkan install
+        console.log('⚠️ Belum dalam mode PWA, tawarkan install.');
+        bubble.innerHTML = `
+            <div>👋 Hai! Mau pasang aplikasi ini ke layar utama?</div>
+            <button id="install-button" class="btn btn-success btn-sm mt-2">Install App</button>
+        `;
+    }
 
-        // Jika 3 detik tidak ada beforeinstallprompt, tetap tampilkan popup
-        setTimeout(() => {
-            if (!deferredPrompt) {
-                console.log('⏳ beforeinstallprompt tidak muncul, tetap tampilkan popup.');
-                showInstallPopup();
+    chatWindow.appendChild(bubble);
+
+    // Scroll ke bawah supaya kelihatan
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+
+    // Kalau belum install, pasang event listener ke tombol install
+    if (!isInStandaloneMode()) {
+        document.getElementById('install-button')?.addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('✅ User accepted install');
+                    } else {
+                        console.log('❌ User dismissed install');
+                    }
+                    deferredPrompt = null;
+                });
+            } else if (isIos) {
+                alert("Untuk iPhone/iPad: Tekan tombol Bagikan ➔ Tambahkan ke Layar Utama.");
+            } else {
+                alert("Install prompt tidak tersedia. Coba lewat menu browser.");
             }
-        }, 3000);
+        });
     }
 }
-
-// Tombol Install
-document.getElementById('install-button')?.addEventListener('click', () => {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('✅ User accepted install');
-            } else {
-                console.log('❌ User dismissed install');
-            }
-            deferredPrompt = null;
-        });
-    }
-    hideInstallPopup();
-});

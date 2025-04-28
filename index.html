@@ -7,7 +7,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="manifest" href="anifest.json" />
+    <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#000000" />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
@@ -26,12 +26,14 @@
   </head>
 
   <body>
-    <!-- Popup Install -->
-    <div id="install-popup" class="d-none" >
+    <!-- Popup Install --
+    <div id="install-popup" class="d-none positiion-relative">
       <p>Pasang aplikasi ini ke layar utama untuk pengalaman terbaik!</p>
       <button id="install-button" class="btn btn-success">Install App</button>
-      <button id="close-popup" class="btn btn-danger">Tutup</button>
-    </div>
+      <button id="close-popup" class="btn  rounded-circle position-absolute" style="top: 0;right: 0;
+"><i class="fas fa-xmark" style="color: white;"></i>
+      </button>
+    </div>-->
 
     <!-- nerd start -->
     <div id="nerd-stats">
@@ -117,10 +119,35 @@
         const windowHeight = $(window).height();
 
 
-        // Tombol untuk menutup popup
-        $('#close-popup').on('click', function() {
-          $('#install-popup').fadeOut(); // Menggunakan fadeOut untuk animasi
-        });
+        setTimeout(function() {
+          const sayHiBubble = `
+            <div class="chat-bubble ai-bubble mb-3" id="sayhi-bubble">
+              <div>👋 Hai! Mau pasang aplikasi ini ke layar utama?</div>
+              <button id="install-button" class="btn btn-success btn-sm mt-2">Install App</button>
+            </div>
+          `;
+          $("#chat-window").append(sayHiBubble);
+
+          // Scroll supaya bubble kelihatan
+          $("#chat-window").scrollTop($("#chat-window")[0].scrollHeight);
+
+          // Event klik tombol install
+          $("#install-button").click(function () {
+            if (window.deferredPrompt) {
+              window.deferredPrompt.prompt();
+              window.deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                  console.log('User accepted the install prompt');
+                } else {
+                  console.log('User dismissed the install prompt');
+                }
+                window.deferredPrompt = null;
+              });
+            } else {
+              alert("Install prompt tidak tersedia. Coba lewat menu browser.");
+            }
+          });
+        }, 1000); // Delay 1 detik
 
 
         // Mendeteksi ukuran layar
