@@ -1,6 +1,6 @@
 {
-    "name": "Pay Per Use GPT",
-    "short_name": "PPU GPT",
+    "name": "Pay Per GPT",
+    "short_name": "PayperGPT",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#000000",
