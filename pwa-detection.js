@@ -12,7 +12,10 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); // Mencegah prompt langsung muncul
   deferredPrompt = e;
   console.log('📦 beforeinstallprompt event captured.');
-  showInstallBubble();
+
+  if (!sessionStorage.getItem("installDismissed")) {
+    showInstallBubble();
+  }
 });
 
 // Fungsi untuk menampilkan bubble install di chat
@@ -22,17 +25,19 @@ function showInstallBubble() {
 
   const bubble = document.createElement('div');
   bubble.className = 'chat-bubble ai-bubble mb-3';
-  
+
   if (isInStandaloneMode()) {
     console.log('✅ Sudah dalam mode PWA, tampilkan sapaan saja.');
-    bubble.innerHTML = `<div>👋 Hai buddy! Welcome back!</div>`;
+    bubble.innerHTML = `<div><p>👋 Hai buddy! Welcome back!</p></div>`;
   } else {
-    bubble.innerHTML = `<div>👋 Tekan di sini untuk menginstal aplikasi.</div>`;
+    bubble.innerHTML = `<div>
+      <p>👋 Hi buddy welcome to the club, You'll get better experience using our app just hit the install button!</p>
+    </div>`;
     
     const installButton = document.createElement('button');
     installButton.id = 'install-button';
-    installButton.className = 'btn btn-primary';
-    installButton.textContent = 'Install App';
+    installButton.className = 'btn border btn-sm mt-2 text-white';
+    installButton.textContent = '🤖 Install App';
 
     installButton.addEventListener('click', () => {
       if (deferredPrompt) {
@@ -42,6 +47,7 @@ function showInstallBubble() {
             console.log('✅ User accepted install');
           } else {
             console.log('❌ User dismissed install');
+            sessionStorage.setItem("installDismissed", "true");
           }
           deferredPrompt = null;
         });
@@ -51,7 +57,7 @@ function showInstallBubble() {
         alert("Install prompt tidak tersedia. Coba lewat menu browser.");
       }
     });
-
+    
     bubble.appendChild(installButton);
   }
   
