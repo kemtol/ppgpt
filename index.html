@@ -11,6 +11,7 @@
     <meta name="theme-color" content="#111111">
     <meta name="msapplication-navbutton-color" content="#111111">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
       rel="stylesheet" />
@@ -55,15 +56,35 @@
 
       <!-- Chat input -->
       <div class="chat-input-container fixed-bottom m-3 border-0 bg-dark">
+        <!-- attachment preview -->
         <div id="attachment-preview"></div>
+        <!-- modal menu -->
+        <div id="modal-menu" class="position-absolute bg-dark rounded pt-2 pb-2" style="z-index: 998;top: 0rem;left: 1.5rem;transform: translate(0%,-50%);min-width: 10rem;border: 2px solid #444;display: none;">
+          <a href="" class="d-flex p-1 ps-3 pe-3 text-start text-light fs-7 align-items-center justify-content-center">
+            <i class="fas fa-robot me-3" style="color: #fff;width:1rem"></i>
+            <span class="d-block" style="width: 5rem;">openAI</span>
+            <input type="radio" name="model" id="openai" class="toggle-link-radio" checked>
+          </a>
+          <a href="" class="d-flex p-1 ps-3 pe-3 text-start text-light fs-7 align-items-center justify-content-center">
+            <i class="fa-brands fa-google  me-3"  style="color: #fff;width:1rem"></i> 
+            <span class="d-block" style="width: 5rem;">Gemini</span>
+            <input type="radio" name="model" id="gemini" class="toggle-link-radio">
+          </a>
+          <a href="" class="d-flex p-1 ps-3 pe-3 text-start text-light fs-7 align-items-center justify-content-center">
+            <i class="fa-brands fa-docker me-3" style="color: #fff;width:1rem"></i> 
+            <span class="d-block" style="width: 5rem;">Deepseek</span>
+            <input type="radio" name="model" id="deepseek" class="toggle-link-radio">
+          </a>
+        </div>
+        <!-- // modal menu -->
+        <!-- chat textfield -->
         <form id="chat-form">
           <textarea
             id="chat-input"
             rows="1"
             class="form-control bg-dark text-white border-0 mb-2"
             placeholder="Ketik sesuatu..."></textarea>
-          <div
-            class="d-flex align-items-center gap-2 m-2 mb-0">
+          <div class="d-flex align-items-center gap-2 m-2 mb-0">
             <button id="chat-menu" 
               class="btn border rounded-circle btn-sm"
               style="font-size: 0.7rem">
@@ -87,7 +108,7 @@
           </div>
         </form>
       </div>
-    </div>
+    </div>    
 
     <!-- Overlay PG -->
     <div id="pg-overlay" class="pg-overlay d-none">
@@ -97,6 +118,13 @@
         <div id="pg-overlay-body">Mendeteksi lokasi...</div>
       </div>
     </div>
+    
+    <!----------------------------
+    LOGIC START HERE
+    by Capital Commerce
+    2025
+    v 1.0
+    --------------------------------->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <script src="pwa-detection.js?v=3"></script>
@@ -113,47 +141,14 @@
         const windowHeight = $(window).height();
 
         // PWA encforce
-        /*setTimeout(function() {
-          8const sayHiBubble = `
-            <div class="chat-bubble ai-bubble mb-3" id="sayhi-bubble">
-              <div>
-                <p>👋 Hi buddy welcome tho the club,<br />You'll get better experience using our app just hit the install button!</p> 
-              </div>
-              <button id="install-button" class="btn border btn-sm mt-2 text-white">🤖 Install App</button>
-            </div>
-          `;
-          $("#chat-window").append(sayHiBubble);
-
-          // Scroll supaya bubble kelihatan
-          $("#chat-window").scrollTop($("#chat-window")[0].scrollHeight);
-
-          // Event klik tombol install
-          $("#install-button").click(function () {
-            if (window.deferredPrompt) {
-              window.deferredPrompt.prompt();
-              window.deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                  console.log('User accepted the install prompt');
-                } else {
-                  console.log('User dismissed the install prompt');
-                }
-                window.deferredPrompt = null;
-              });
-            } else {
-              alert("Install prompt tidak tersedia. Coba lewat menu browser.");
-            }
-          });
-        }, 2000); // Delay 2 detik*/
-
-        // PWA encforce
-
         setTimeout(function() {
-          const sayAskMe = `<div class="chat-bubble ai-bubble mb-3" id="ask-me-bubble">
-                <p class="mb-0">Anyway, what can i do for you?</p>
-              </div>
+          const sayAskMe = `
+          <div class="chat-bubble ai-bubble mb-3" id="ask-me-bubble">
+            <p class="mb-0">Anyway, what can i do for you?</p>
+          </div>
           `;
           $("#chat-window").append(sayAskMe);
-        }, 3000); // Delay 3 detik
+        }, 2500); // Delay 3 detik
         
         // Mendeteksi ukuran layar
         const width = $(window).width();
@@ -264,6 +259,7 @@
 
           // Proses markdown jadi HTML + sanitize
           const html = DOMPurify.sanitize(marked.parse(message));
+          
           if (file) {
             const image = await toBase64(file);
             const safeMessage = escapeHTML(message);
@@ -305,6 +301,19 @@
 
           const loaderId = "loader-" + Date.now();
           showLoader(loaderId);
+
+          // Saat chat menu diklik, toggle modal
+          $('#chat-menu').on('click', function (e) {
+            e.stopPropagation(); // Cegah klik merambat ke document
+            $('#modal-menu').toggle();
+          });
+
+          // Tutup modal jika klik chat menu di luar modal dan tombol
+          $(document).on('click', function (e) {
+            if (!$(e.target).closest('#modal-menu, #chat-menu').length) {
+              $('#modal-menu').hide();
+            }
+          });
 
           // Reset input form setelah submit
           $("#chat-input").val("").css("height", "auto");
@@ -427,6 +436,22 @@
           .on("input", function () {
             $(this).css({ height: "auto", height: this.scrollHeight + "px" });
           });
+
+        // Toggle modal saat tombol diklik
+        $('#chat-menu').on('click', function(e) {
+          e.stopPropagation(); // Mencegah event bubbling
+          $('#modal-menu').toggle(); // Tampilkan/sembunyikan modal
+        });
+
+        // Mencegah modal tertutup saat diklik di dalam modal
+        $('#modal-menu').on('click', function(e) {
+          e.stopPropagation();
+        });
+
+        // Sembunyikan modal jika klik di luar modal
+        $(document).on('click', function() {
+          $('#modal-menu').hide();
+        });
 
         // Reset chat
         $("#resetChat").click(() => {
