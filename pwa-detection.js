@@ -14,6 +14,14 @@ const isInStandaloneMode = () => (
     (window.navigator.standalone === true)
 );
 
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    console.log('📦 beforeinstallprompt event captured.');
+
+    showInstallBubble();
+});
+
 // Fungsi untuk menampilkan bubble install di chat
 function showInstallBubble() {
     const chatWindow = document.getElementById('chat-window');
