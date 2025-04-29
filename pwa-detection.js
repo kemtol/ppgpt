@@ -1,10 +1,5 @@
 let deferredPrompt;
 
-// Fungsi untuk mendeteksi apakah perangkat mobile
-const isMobileDevice = () => {
-    return /android|iphone|ipad|ipod|windows phone/i.test(navigator.userAgent.toLowerCase());
-};
-
 // Deteksi iOS
 const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
 
@@ -34,14 +29,7 @@ function showInstallBubble() {
         // Kalau sudah PWA, cuma sapa saja
         console.log('✅ Sudah dalam mode PWA, tampilkan sapaan saja.');
         bubble.innerHTML = `
-            <div>👋 Hai! Selamat datang di aplikasi kami!</div>
-        `;
-    } else {
-        // Kalau belum PWA, tawarkan install
-        console.log('⚠️ Belum dalam mode PWA, tawarkan install.');
-        bubble.innerHTML = `
-            <div>👋 Hai! Mau pasang aplikasi ini ke layar utama?</div>
-            <button id="install-button" class="btn btn-success btn-sm mt-2">Install App</button>
+            <div>👋 Hai buddy! Welcome back!</div>
         `;
     }
 
