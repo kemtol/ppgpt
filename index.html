@@ -28,14 +28,6 @@
   </head>
 
   <body>
-    <!-- Popup Install --
-    <div id="install-popup" class="d-none positiion-relative">
-      <p>Pasang aplikasi ini ke layar utama untuk pengalaman terbaik!</p>
-      <button id="install-button" class="btn btn-success">Install App</button>
-      <button id="close-popup" class="btn  rounded-circle position-absolute" style="top: 0;right: 0;
-"><i class="fas fa-xmark" style="color: white;"></i>
-      </button>
-    </div>-->
 
     <!-- nerd start -->
     <div id="nerd-stats">
@@ -54,7 +46,7 @@
         class="chat-header position-absolute top-0 start-0 end-0"></div>
       <script>
         document.addEventListener("DOMContentLoaded", function () {
-          const messages = ["🤖 Hola Cheapskate", "🍉 Free Palestine"];
+          const messages = ["🤖 Hola Cheapskate", "🍉 Humanity"];
           document.getElementById("chatHeader").textContent =
             messages[Math.floor(Math.random() * messages.length)];
         });
@@ -120,12 +112,14 @@
         const $chatWindow = $(".chat-window");
         const windowHeight = $(window).height();
 
-
+        // PWA encforce
         setTimeout(function() {
           const sayHiBubble = `
             <div class="chat-bubble ai-bubble mb-3" id="sayhi-bubble">
-              <div>👋 Hai! Mau pasang aplikasi ini ke layar utama?</div>
-              <button id="install-button" class="btn btn-success btn-sm mt-2">Install App</button>
+              <div>
+                <p>👋 Hi buddy welcome tho the club,<br />You'll get better experience using our app just hit the install button!</p> 
+              </div>
+              <button id="install-button" class="btn border btn-sm mt-2 text-white">🤖 Install App</button>
             </div>
           `;
           $("#chat-window").append(sayHiBubble);
@@ -149,9 +143,18 @@
               alert("Install prompt tidak tersedia. Coba lewat menu browser.");
             }
           });
-        }, 1000); // Delay 1 detik
+        }, 2000); // Delay 2 detik
 
+        // PWA encforce
 
+        setTimeout(function() {
+          const sayAskMe = `<div class="chat-bubble ai-bubble mb-3" id="ask-me-bubble">
+                <p class="mb-0">Anyway, what can i do for you?</p>
+              </div>
+          `;
+          $("#chat-window").append(sayAskMe);
+        }, 3000); // Delay 3 detik
+        
         // Mendeteksi ukuran layar
         const width = $(window).width();
         let triggerPoint = windowHeight * 0.1; // 10% dari tinggi window
@@ -294,7 +297,7 @@
             const userMessages = history.filter(
               (msg) => msg.role === "user"
             ).length;
-            if (userMessages === 1) {
+            if (userMessages === 3) {
               showPGOverlay();
             }
             payload.messages = history;
@@ -323,13 +326,14 @@
 
               const html = DOMPurify.sanitize(marked.parse(response));
               const responseId = "response-" + Date.now();
-
+              
               $("#chat-window").append(`
                 <div class="chat-bubble mb-3 ai-bubble" id="${responseId}">
                   ${html}
                   <span class="cost-info response-cost">Cost: ${cost} using model: ${model}</span>
                 </div>
               `);
+              $(".sponsored-spinner").remove();
 
               hljs.highlightAll(); // Highlight code block
               history.push({ role: "assistant", content: response });
@@ -373,13 +377,18 @@
         const showLoader = (id) => {
           $("#chat-window").append(
             `<div class="chat-bubble ads-bubble mb-3" id="${id}">
-              <div class="d-flex ad-container text-center">
+              <div class="d-flex ad-container align-items-center justify-content-center pt-2 pb-2">
                 <div class="p-2"><img src="/img/ads-20250231.jpg" class="rounded-circle" alt="Iklan Loading" style="max-width: 75px;height: auto;/* border-radius: 0!important; */"></div>
-                <div class="p-2 flex-grow-1 text-start">
-                  <strong>Cakra Autoworks</strong>
-                  <p class="small">Speeduino specialist, Jakarta</p>
+                <div class="p-2 text-start">
+                  <strong class="mb-0">Cakra Autoworks</strong>
+                  <p class="small mb-0">Speeduino specialist, Jakarta</p>
                   <a href="" class="small">Chat Now</a>
                 </div>
+              </div>
+              <!-- Loading bar kecil di bawah -->
+              <div class="sponsored-spinner mt-2 d-flex align-items-center justify-content-center gap-2">
+                <div class="spinner-border text-secondary spinner-border-sm" role="status" aria-hidden="true"></div>
+                <small class="text-light">Loading while me thinking..</small>
               </div>
             </div>`
           );
