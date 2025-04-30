@@ -164,6 +164,19 @@
             .replace(/'/g, "&#039;");
         }
 
+        // Saat chat menu diklik, toggle modal
+          $('#chat-menu').on('click', function (e) {
+            e.stopPropagation(); // Cegah klik merambat ke document
+            $('#modal-menu').toggle();
+          });
+
+          // Tutup modal jika klik chat menu di luar modal dan tombol
+          $(document).on('click', function (e) {
+            if (!$(e.target).closest('#modal-menu, #chat-menu').length) {
+              $('#modal-menu').hide();
+            }
+          });
+
         function countTokens(text) {
           return text.trim().split(/\s+/).length;
         }
@@ -301,19 +314,6 @@
 
           const loaderId = "loader-" + Date.now();
           showLoader(loaderId);
-
-          // Saat chat menu diklik, toggle modal
-          $('#chat-menu').on('click', function (e) {
-            e.stopPropagation(); // Cegah klik merambat ke document
-            $('#modal-menu').toggle();
-          });
-
-          // Tutup modal jika klik chat menu di luar modal dan tombol
-          $(document).on('click', function (e) {
-            if (!$(e.target).closest('#modal-menu, #chat-menu').length) {
-              $('#modal-menu').hide();
-            }
-          });
 
           // Reset input form setelah submit
           $("#chat-input").val("").css("height", "auto");
