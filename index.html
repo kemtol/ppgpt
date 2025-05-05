@@ -26,6 +26,24 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link rel="stylesheet" href="style.css" />
     <script src="https://jokul.doku.com/jokul-checkout-js/v1/jokul-checkout-1.0.0.js"></script>
+    <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js').then(reg => {
+        reg.onupdatefound = () => {
+          const newWorker = reg.installing;
+          newWorker.onstatechange = () => {
+            if (newWorker.state === 'installed') {
+              if (navigator.serviceWorker.controller) {
+                // Ada versi baru tersedia
+                console.log('Versi baru tersedia, reload halaman...');
+                window.location.reload(); // atau tampilkan tombol "Refresh"
+              }
+            }
+          };
+        };
+      });
+    }
+    </script>
   </head>
 
   <body>
@@ -39,6 +57,7 @@
       <div id="stat-duration">Duration: 0s</div>
     </div>
     <!-- //nerd start -->
+     
     <!-- start chat window -->
     <div class="chat-wrapper">
       <!-- Chat window for bubble -->
@@ -125,11 +144,35 @@
     2025
     v 1.0
     --------------------------------->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>  
     <script src="pwa-detection.js?v=3"></script>
     
     <script>
+
+        // Manage menu ganti model
+        //-------------------------
+        function manageMenu(){
+          // Letakkan event listener disini, sebelum atau sesudah fungsi submit chat
+          $('#chat-menu').on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $('#modal-menu').toggle();
+          });
+        
+        //-------------------------
+        // Jalankan logic ketika document ready
+        //-------------------------
+        $(document).on('click', function (e) {
+          if (!$(e.target).closest('#modal-menu, #chat-menu').length) {
+            $('#modal-menu').hide();
+          }
+        });
+      }
+      
+
+      //-----------------------
+      // ketika document ready
+      //-----------------------
       $(document).ready(function () {
         //init
         let sessionStartTime = Date.now(); // Waktu awal sesi chat
@@ -155,6 +198,8 @@
         let triggerPoint = windowHeight * 0.1; // 10% dari tinggi window
         $("#chat-input").focus();
 
+        manageMenu();
+
         function escapeHTML(str) {
           return str
             .replace(/&/g, "&amp;")
@@ -163,19 +208,6 @@
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
         }
-
-        // Saat chat menu diklik, toggle modal
-          $('#chat-menu').on('click', function (e) {
-            e.stopPropagation(); // Cegah klik merambat ke document
-            $('#modal-menu').toggle();
-          });
-
-          // Tutup modal jika klik chat menu di luar modal dan tombol
-          $(document).on('click', function (e) {
-            if (!$(e.target).closest('#modal-menu, #chat-menu').length) {
-              $('#modal-menu').hide();
-            }
-          });
 
         function countTokens(text) {
           return text.trim().split(/\s+/).length;
@@ -237,19 +269,8 @@
           lastScrollTop = scrollTop;
         });
 
-        // Scroll otomatis ke bagian bawah chat window
-        const scrollToBottom = () =>
-          $("#chat-window").scrollTop($("#chat-window")[0].scrollHeight);
-
-        // Ketika form chat dikirim
-        $("#chat-form").submit(async function (e) {
-          e.preventDefault();
-          const message = $("#chat-input").val().trim();
-          const file = $("#file-input")[0].files[0];
-          if (!message && !file) return;
-          let payload = {};
-
-          function isProbablyCode(text) {
+        //Apakah content berupa code
+        function isProbablyCode(text) {
             const codeIndicators = [
               "<",
               ">",
@@ -270,9 +291,31 @@
             );
           }
 
+        // Scroll otomatis ke bagian bawah chat window
+        const scrollToBottom = () =>
+          $("#chat-window").scrollTop($("#chat-window")[0].scrollHeight);
+
+
+        // conversation LOGIC start request and fetch
+        // ------------------------------------------
+        $("#chat-form").submit(async function (e) {
+          e.preventDefault();
+          const message = $("#chat-input").val().trim();
+          const file = $("#file-input")[0].files[0];
+          if (!message && !file) return;
+          let payload = {};
+
           // Proses markdown jadi HTML + sanitize
           const html = DOMPurify.sanitize(marked.parse(message));
           
+          // URL Model list
+          const textWorkerURL = "https://round-cake-a592.mkemalw.workers.dev"; 
+          const dalleWorkerURL = "http://8.215.27.234/generate-image";
+
+          // deklarasi Dall-E
+          const isDallePrompt = /\b(gambarkan|lukisan|ilustrasi|gambar(?:kan)?|buat(?:kan)? gambar|visualisasikan|sketsa|render|generate(?: an?)? image|create(?: an?)? image|draw(?: an?)? image?)\b/i.test(message.toLowerCase());
+
+          // start to request if its file, text or dalle
           if (file) {
             const image = await toBase64(file);
             const safeMessage = escapeHTML(message);
@@ -290,7 +333,9 @@
 
             payload.image_url = image;
             payload.prompt = message || "Analisis gambar ini";
-          } else {
+          } else if (isDallePrompt){
+            payload = { prompt: message, mode: "image" };
+          }else {
             const safeMessage = escapeHTML(message);
             const formattedMessage = isProbablyCode(message)
               ? `<pre>${safeMessage}</pre>`
@@ -312,65 +357,104 @@
             payload.messages = history;
           }
 
+          console.log("--- Debug Routing ---");
+          console.log("Pesan Input:", message);
+          console.log("File Object:", file); // Lihat apakah ada objek file di sini
+          console.log("Hasil isDallePrompt:", isDallePrompt); // Cek hasil tes regex
+
+          // Tentukan URL worker berdasarkan jenis permintaan
+          const workerURL = file ? textWorkerURL : (isDallePrompt ? dalleWorkerURL : textWorkerURL);
+          console.log("Worker URL yang Dipilih:", workerURL); // Lihat URL mana yang akhirnya dipilih
+          console.log("--- End Debug Routing ---");
+
           const loaderId = "loader-" + Date.now();
           showLoader(loaderId);
 
+          // Reset input form setelah submit
+          // ... (reset code) ...
+
+          console.log("--- Debug Fetch ---");
+          console.log("Mengirim ke URL:", workerURL);
+          console.log("Dengan Payload:", JSON.stringify(payload));
+          console.log("--- End Debug Fetch ---");
+  
           // Reset input form setelah submit
           $("#chat-input").val("").css("height", "auto");
           $("#file-input").val("");
           $("#attachment-preview").empty();
 
           // AI membalas
-          fetch("https://round-cake-a592.mkemalw.workers.dev", {
+          fetch(workerURL, { // <--- PERBAIKAN UTAMA DI SINI
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
           })
-            .then((res) => res.json())
+            .then((res) => {
+                // Cek jika respons tidak ok (misal status 4xx atau 5xx)
+                if (!res.ok) {
+                    // Coba baca error dari body jika ada, fallback ke status text
+                    return res.json().catch(() => null).then(errBody => {
+                      throw new Error(errBody?.error?.message || `HTTP error! status: ${res.status} ${res.statusText}`);
+                    });
+                }
+                return res.json();
+            })
             .then((data) => {
-              //$(`#${loaderId}`).remove();
-              const response = data.response;
-              const cost = data.cost; // Mengambil biaya dari backend
-              const model = data.model; // Mengambil informasi model
+                $(`#${loaderId}`).remove(); // Pindahkan remove loader ke sini agar hilang saat sukses
 
-              const html = DOMPurify.sanitize(marked.parse(response));
-              const responseId = "response-" + Date.now();
-              
-              $("#chat-window").append(`
-                <div class="chat-bubble mb-3 ai-bubble" id="${responseId}">
-                  ${html}
-                  <span class="cost-info response-cost">Cost: ${cost} using model: ${model}</span>
-                </div>
-              `);
-              $(".sponsored-spinner").remove();
+                // --- Logika untuk Menampilkan Response ---
+                // Cek apakah response adalah gambar (dari DALL-E) atau teks
+                if (data.image_url) { // Asumsi DALL-E worker mengembalikan { image_url: "..." }
+                    $("#chat-window").append(`
+                        <div class="chat-bubble mb-3 ai-bubble">
+                            <img src="${data.image_url}" alt="Generated image" class="m-2 rounded" style="max-width: 320px;">
+                            ${data.cost ? `<span class="cost-info response-cost">Cost: ${data.cost} using model: ${data.model || 'dall-e'}</span>` : ''}
+                        </div>
+                    `);
+                    // Mungkin perlu push sesuatu ke history? Atau tidak?
+                } else if (data.response) { // Asumsi Text worker mengembalikan { response: "...", cost: ..., model: ...}
+                    const response = data.response;
+                    const cost = data.cost; // Mengambil biaya dari backend
+                    const model = data.model; // Mengambil informasi model
+                    const html = DOMPurify.sanitize(marked.parse(response));
+                    const responseId = "response-" + Date.now();
 
-              hljs.highlightAll(); // Highlight code block
-              history.push({ role: "assistant", content: response });
-              // ⬇️ Tambahkan ini untuk auto-scroll ke bubble AI
-              document.getElementById(responseId)?.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-              });
-              if (width > 768) {
-                // 768px adalah ukuran layar desktop
-                $("#chat-input").focus(); // Fokus ke textarea hanya untuk desktop
-              }
+                    $("#chat-window").append(`
+                        <div class="chat-bubble mb-3 ai-bubble" id="${responseId}">
+                            ${html}
+                            ${cost ? `<span class="cost-info response-cost">Cost: ${cost} using model: ${model}</span>` : ''}
+                        </div>
+                    `);
+                    hljs.highlightAll(); // Highlight code block
+                    history.push({ role: "assistant", content: response });
+                    document.getElementById(responseId)?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                    });
+                } else {
+                    // Handle jika format response tidak sesuai ekspektasi
+                    throw new Error("Format response tidak dikenal dari worker.");
+                }
+
+                $(".sponsored-spinner").remove(); // Jika masih ada
+                if (width > 768) {
+                    $("#chat-input").focus();
+                }
             })
             .catch((err) => {
-              $(`#${loaderId}`).remove();
-              console.error("❌ Error request ke worker:", err);
-              $("#chat-window").append(
-                `<div class="chat-bubble ai-bubble text-danger">
-                  ❌ Error dalam memproses request: ${err.message || err}
-                </div>`
-              );
-              scrollToBottom();
-              if (width > 768) {
-                // 768px adalah ukuran layar desktop
-                $("#chat-input").focus(); // Fokus ke textarea hanya untuk desktop
-              }
+                $(`#${loaderId}`).remove(); // Pastikan loader dihapus juga saat error
+                console.error("❌ Error request ke worker:", err);
+                $("#chat-window").append(
+                    `<div class="chat-bubble ai-bubble text-danger mb-3">
+                        ❌ Error dalam memproses request: ${err.message || err}
+                    </div>`
+                );
+                scrollToBottom(); // Pastikan scroll ke bawah
+                if (width > 768) {
+                    $("#chat-input").focus();
+                }
             });
-        });
+      });
 
         // Fungsi untuk mengubah file menjadi base64
         const toBase64 = (file) => {
@@ -436,22 +520,6 @@
           .on("input", function () {
             $(this).css({ height: "auto", height: this.scrollHeight + "px" });
           });
-
-        // Toggle modal saat tombol diklik
-        $('#chat-menu').on('click', function(e) {
-          e.stopPropagation(); // Mencegah event bubbling
-          $('#modal-menu').toggle(); // Tampilkan/sembunyikan modal
-        });
-
-        // Mencegah modal tertutup saat diklik di dalam modal
-        $('#modal-menu').on('click', function(e) {
-          e.stopPropagation();
-        });
-
-        // Sembunyikan modal jika klik di luar modal
-        $(document).on('click', function() {
-          $('#modal-menu').hide();
-        });
 
         // Reset chat
         $("#resetChat").click(() => {
@@ -526,6 +594,7 @@
             loadJokulCheckout('https://jokul.doku.com/checkout/link/SU5WFDferd561dfasfasdfae123c20200510090550775'); // Replace it with the response.payment.url you retrieved from the response
         });
     </script>
+
     <!-- service worker call -->
     <script>
       if ('serviceWorker' in navigator) {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ppu-gpt-cache-v1';
+const CACHE_NAME = 'ppu-gpt-cache-20250501';
 const urlsToCache = [
   './',
   'index.html',
