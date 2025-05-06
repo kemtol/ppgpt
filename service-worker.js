@@ -1,8 +1,8 @@
-const CACHE_NAME = 'ppu-gpt-cache-20250501';
+const CACHE_NAME = 'ppu-gpt-cache-20250506';
 const urlsToCache = [
   './',
   'index.html',
-  'style.css',
+  'style.css?v=20250506',
   'favicon-32x32.png',
   'favicon-16x16.png',
   'apple-touch-icon.png',

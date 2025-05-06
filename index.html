@@ -312,11 +312,11 @@
           const textWorkerURL = "https://round-cake-a592.mkemalw.workers.dev"; 
           const dalleWorkerURL = "http://8.215.27.234/generate-image";
 
-          // deklarasi Dall-E
-          const isDallePrompt = /\b(gambarkan|lukisan|ilustrasi|gambar(?:kan)?|buat(?:kan)? gambar|visualisasikan|sketsa|render|generate(?: an?)? image|create(?: an?)? image|draw(?: an?)? image?)\b/i.test(message.toLowerCase());
+          const isDallePrompt = /\b(gambarkan|lukisan|ilustrasi|gambar(?:kan)?|buat(?:kan)? gambar|visualisasikan|sketsa|render|generate(?: an?)? image|create(?: an?)? image|draw(?: an?)? image|KATA_YANG_SALAH?)\b/i.test(message.toLowerCase());
 
           // start to request if its file, text or dalle
           if (file) {
+            // ... (kode untuk file tetap sama) ...
             const image = await toBase64(file);
             const safeMessage = escapeHTML(message);
             const formattedMessage = isProbablyCode(message)
@@ -324,8 +324,7 @@
               : `<div>${safeMessage}</div>`;
 
             $("#chat-window").append(`
-            <img src="${image}" alt="User image" class="m-2 rounded" style="max-width: 320px; align-self: end;
-">
+            <img src="${image}" alt="User image" class="m-2 rounded" style="max-width: 320px; align-self: end;">
             <div class="chat-bubble user-bubble mb-3">
               ${formattedMessage}
             </div>
@@ -333,9 +332,31 @@
 
             payload.image_url = image;
             payload.prompt = message || "Analisis gambar ini";
-          } else if (isDallePrompt){
+
+          } else if (isDallePrompt){ // <--- KASUS DALL-E (DIPERBAIKI)
+            // --- MULAI TAMBAHAN ---
+            // Buat bubble user (sama seperti di blok 'else')
+            const safeMessage = escapeHTML(message);
+            const formattedMessage = isProbablyCode(message)
+              ? `<pre>${safeMessage}</pre>`
+              : `<div>${safeMessage}</div>`;
+            // Append bubble user
+            $("#chat-window").append(`
+              <div class="chat-bubble mb-3 user-bubble">
+                ${formattedMessage}
+              </div>
+            `);
+             // --- AKHIR TAMBAHAN ---
+
+            // Set payload DALL-E (tetap sama)
             payload = { prompt: message, mode: "image" };
-          }else {
+
+            // Pertimbangkan: Apakah prompt DALL-E perlu masuk history?
+            // Jika ya, tambahkan baris ini:
+            // history.push({ role: "user", content: message });
+            // Jika tidak, biarkan seperti ini.
+
+          } else { // <--- KASUS TEKS BIASA (tetap sama)
             const safeMessage = escapeHTML(message);
             const formattedMessage = isProbablyCode(message)
               ? `<pre>${safeMessage}</pre>`
@@ -406,9 +427,9 @@
                 // Cek apakah response adalah gambar (dari DALL-E) atau teks
                 if (data.image_url) { // Asumsi DALL-E worker mengembalikan { image_url: "..." }
                     $("#chat-window").append(`
-                        <div class="chat-bubble mb-3 ai-bubble">
-                            <img src="${data.image_url}" alt="Generated image" class="m-2 rounded" style="max-width: 320px;">
-                            ${data.cost ? `<span class="cost-info response-cost">Cost: ${data.cost} using model: ${data.model || 'dall-e'}</span>` : ''}
+                        <div style="align-self: start;">
+                          <img src="${data.image_url}" alt="Generated image" class="m-2 rounded" style="max-width: 50%;">
+                          ${data.cost ? `<span class="cost-info response-cost">Cost: ${data.cost} using model: ${data.model || 'dall-e'}</span>` : ''}
                         </div>
                     `);
                     // Mungkin perlu push sesuatu ke history? Atau tidak?
@@ -436,7 +457,7 @@
                     throw new Error("Format response tidak dikenal dari worker.");
                 }
 
-                $(".sponsored-spinner").remove(); // Jika masih ada
+                //$(".sponsored-spinner").remove(); // Jika masih ada
                 if (width > 768) {
                     $("#chat-input").focus();
                 }
@@ -454,7 +475,8 @@
                     $("#chat-input").focus();
                 }
             });
-      });
+      
+        });
 
         // Fungsi untuk mengubah file menjadi base64
         const toBase64 = (file) => {
