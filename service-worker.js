@@ -1,8 +1,8 @@
-const CACHE_NAME = 'ppu-gpt-cache-20250506'; // Pastikan nama cache unik jika Anda memperbarui SW secara signifikan
+const CACHE_NAME = 'ppu-gpt-cache-20250507'; // Pastikan nama cache unik jika Anda memperbarui SW secara signifikan
 const urlsToCache = [
   './', // Cache halaman root
   'index.html',
-  'style.css?v=20250506', // Tambahkan versi untuk cache busting jika CSS berubah
+  'style.css?v=20250507', // Tambahkan versi untuk cache busting jika CSS berubah
   'favicon-32x32.png',
   'favicon-16x16.png',
   'apple-touch-icon.png',
