@@ -234,11 +234,12 @@ tbody, td, tfoot, th, thead, tr {
   }
 }
 
-.btn-reset {
+.resetChat {
+  element.style {
   position: fixed;
   top: 1rem;
-  right: 1rem;
-  z-index: 100;
+  right: 2.5rem;
+}
 }
 
 ::-webkit-scrollbar {
