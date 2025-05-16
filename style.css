@@ -234,12 +234,10 @@ tbody, td, tfoot, th, thead, tr {
   }
 }
 
-.resetChat {
-  element.style {
+#resetChat {
   position: fixed;
-  top: 1rem;
+  top: 1.25rem;
   right: 2.5rem;
-}
 }
 
 ::-webkit-scrollbar {
