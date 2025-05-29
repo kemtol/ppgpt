@@ -587,8 +587,8 @@
     color: #aaa;
 ">its still free tho, just press close</small>
                 <p class="d-none">🌍 ${country}</p>
-                <a class="btn btn-primary m-2 doku-payment" data-amount="25000" href="#">Beli Voucher Rp 25.000</a>
-                <a class="btn btn-primary m-2 doku-payment" data-amount="50000" href="#">Beli Voucher Rp 50.000</a>
+                <a class="btn btn-primary m-2 doku-payment buy-button" data-amount="25000" href="#">Beli Voucher Rp 25.000</a>
+                <a class="btn btn-primary m-2 doku-payment buy-button" data-amount="50000" href="#">Beli Voucher Rp 50.000</a>
                 <hr />
                 <ul class="list-unstyled">
                   <li>Tau ga kalau 1 chat itu cuma 100 - 300 perak.</li>
@@ -614,13 +614,87 @@
         $(document).on("click", "#close-overlay", function () {
           $("#pg-overlay").addClass("d-none");
         });
+
+
+// Add DOKU checkout page
+        
+        $("#buy-coin").on("click", function () {
+            showPGOverlay();
+        });
+
+
+        // Function to generate a simple UUID for device ID
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // Get or generate a device ID and store in localStorage
+        let deviceId = localStorage.getItem('deviceId');
+        if (!deviceId) {
+            deviceId = generateUUID();
+            localStorage.setItem('deviceId', deviceId);
+        }
+
+        $('#pg-overlay-body').on('click', '.buy-button', function () {
+          const amount = $(this).data('amount');
+          const buttonText = $(this).text(); // Get original button text
+          const originalButton = $(this); // Reference to the clicked button
+
+          // Optionally, add a message to the overlay or console
+          console.log(`Processing ${buttonText} (Amount: ${amount})...`);
+
+          // Disable all buttons within the overlay to prevent multiple clicks
+          $('#pg-overlay-body .buy-button').prop('disabled', true);
+
+          // Make AJAX call to your backend service
+          $.ajax({
+            url: 'https://backend-doku.psdo.capital-commerce.com/generate-payment-url', // Your actual backend URL
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+              amount: amount,
+              device_id: deviceId // Send device ID to backend
+            }),
+            success: function (response) {
+              if (response && response.payment_url) {
+                console.log('Redirecting to DOKU...');
+                // Option 1: Pop up DOKU Checkout
+                if (typeof loadJokulCheckout === 'function') {
+                  loadJokulCheckout(response.payment_url);
+                } else {
+                  console.error("DOKU Checkout JS not loaded correctly. Redirecting instead.");
+                  window.location.href = response.payment_url;
+                }
+              } else {
+                console.error('Error: Could not get payment URL from backend. ' + (response.message || ''));
+                $('#pg-overlay-body .buy-button').prop('disabled', false); // Re-enable buttons
+              }
+            },
+            error: function (xhr, status, error) {
+              console.error('Error connecting to backend: ' + error + '. Details: ' + (xhr.responseText || ''));
+              $('#pg-overlay-body .buy-button').prop('disabled', false); // Re-enable buttons
+            },
+            complete: function () {
+              // Re-enable buttons after DOKU popup/redirect (or error)
+              // For a seamless UX, you might keep them disabled until a payment status is known
+              // via a separate mechanism (e.g., polling your backend, websockets).
+              // For this example, we re-enable on AJAX completion.
+              $('#pg-overlay-body .buy-button').prop('disabled', false);
+            }
+          });
+        });
+
+       
       });
 
-      var checkoutButton = document.getElementById('buy-coin');
-        // Example: the payment page will show when the button is clicked
-        checkoutButton.addEventListener('click', function () {
-            loadJokulCheckout('https://jokul.doku.com/checkout/link/SU5WFDferd561dfasfasdfae123c20200510090550775'); // Replace it with the response.payment.url you retrieved from the response
-        });
+//      var checkoutButton = document.getElementById('buy-coin');
+//        // Example: the payment page will show when the button is clicked
+//        checkoutButton.addEventListener('click', function () {
+//            loadJokulCheckout('https://jokul.doku.com/checkout/link/SU5WFDferd561dfasfasdfae123c20200510090550775'); // Replace it with the response.payment.url you retrieved from the response
+//        });
     </script>
 
     <!-- service worker call -->
