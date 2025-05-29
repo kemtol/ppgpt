@@ -442,13 +442,14 @@
                     const response = data.response;
                     const cost = data.cost; // Mengambil biaya dari backend
                     const model = data.model; // Mengambil informasi model
+                    const tokenCount = data.tokenCount; // Mengambil info total token
                     const html = DOMPurify.sanitize(marked.parse(response));
                     const responseId = "response-" + Date.now();
 
                     $("#chat-window").append(`
                         <div class="chat-bubble mb-3 ai-bubble" id="${responseId}">
                             ${html}
-                            ${cost ? `<span class="cost-info response-cost">Cost: ${cost} using model: ${model}</span>` : ''}
+                            ${cost ? `<span class="cost-info response-cost">Cost: ${cost} with total tokens : ${tokenCount}, using model: ${model}</span>` : ''}
                         </div>
                     `);
                     hljs.highlightAll(); // Highlight code block
