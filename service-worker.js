@@ -1,110 +1,84 @@
-const CACHE_NAME = 'ppu-gpt-cache-20250507'; // Pastikan nama cache unik jika Anda memperbarui SW secara signifikan
+// service-worker.js
+
+const CACHE_NAME = 'ppu-gpt-cache-20250529';
 const urlsToCache = [
-  './', // Cache halaman root
+  './',
   'index.html',
-  'style.css?v=20250507', // Tambahkan versi untuk cache busting jika CSS berubah
+  'app.js?v=20250529',
+  'style.css?v=20250507',
   'favicon-32x32.png',
   'favicon-16x16.png',
   'apple-touch-icon.png',
   'manifest.json'
-  // Tambahkan aset statis penting lainnya yang ingin Anda cache di sini
-  // Contoh: '/js/main.js?v=20250506', '/img/logo.png'
 ];
 
-// URL atau hostname yang ingin diabaikan oleh Service Worker (tidak di-cache, langsung ke network)
 const IGNORED_HOSTNAMES = [
-  '8.215.27.234', // Hostname DALL-E API Anda
-  // Tambahkan hostname lain jika ada API eksternal lain yang tidak ingin diintersep
+  '8.215.27.234', // DALL-E API Anda
+  // tambahkan hostname eksternal lain yang tidak ingin di-cache
 ];
 
-self.addEventListener('install', (event) => {
-  console.log('Service worker: Install event');
+self.addEventListener('install', event => {
+  console.log('Service worker: Install');
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Service worker: Caching app shell');
-        return cache.addAll(urlsToCache);
-      })
-      .catch(error => {
-        console.error('Service worker: Failed to cache app shell:', error);
-      })
+      .then(cache => cache.addAll(urlsToCache))
+      .catch(err => console.error('Cache install failed:', err))
   );
-  self.skipWaiting(); // Memaksa SW baru untuk aktif lebih cepat
+  self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
-  console.log('Service worker: Activate event');
+self.addEventListener('activate', event => {
+  console.log('Service worker: Activate');
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => { // Mengganti nama variabel 'cache' menjadi 'cacheName' agar lebih jelas
-          if (cacheName !== CACHE_NAME) {
-            console.log('Service worker: Clearing old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(key => key !== CACHE_NAME)
+          .map(oldKey => caches.delete(oldKey))
+      )
+    )
   );
-  self.clients.claim(); // Mengontrol klien yang tidak terkontrol oleh SW sebelumnya
+  self.clients.claim();
 });
 
-self.addEventListener('fetch', (event) => {
-  const requestUrl = new URL(event.request.url);
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
 
-  // Abaikan request ke hostname yang ada di IGNORED_HOSTNAMES atau dari chrome-extension
-  if (IGNORED_HOSTNAMES.includes(requestUrl.hostname) || requestUrl.protocol === 'chrome-extension:') {
-    // Biarkan browser menangani request ini secara normal (langsung ke network)
-    // Tidak memanggil event.respondWith() berarti SW tidak mengintersep.
-    console.log('Service worker: Ignoring fetch for:', event.request.url);
+  // 1) Abaikan external hosts dan non-GET
+  if (
+    IGNORED_HOSTNAMES.includes(url.hostname) ||
+    url.protocol === 'chrome-extension:' ||
+    event.request.method !== 'GET'
+  ) {
     return;
   }
 
-  // Untuk semua request lain (aset lokal Anda), gunakan strategi Cache-First, then Network
-  // Hanya tangani request GET untuk caching, biarkan POST, dll. langsung ke network jika tidak secara eksplisit diabaikan di atas.
-  if (event.request.method === 'GET') {
+  // 2) Network-first untuk app.js (versi dengan query string)
+  if (url.pathname.endsWith('/app.js')) {
     event.respondWith(
-      caches.match(event.request)
-        .then(cachedResponse => {
-          // Cache hit - return the cached response
-          if (cachedResponse) {
-            // console.log('Service worker: Serving from cache:', event.request.url);
-            return cachedResponse;
-          }
-
-          // Cache miss - fetch from network
-          // console.log('Service worker: Fetching from network:', event.request.url);
-          return fetch(event.request).then(networkResponse => {
-            // Opsional: Jika Anda ingin meng-cache aset yang baru diambil jika itu berasal dari origin Anda
-            // atau jika itu adalah bagian dari urlsToCache (meskipun addAll sudah melakukannya saat install).
-            // Pastikan hanya meng-cache respons yang valid (status 200).
-            if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') { // 'basic' type untuk same-origin
-              // Periksa apakah ini aset yang ingin Anda cache dinamis
-              // Misalnya, jika itu adalah bagian dari origin Anda dan bukan API eksternal.
-              // Kode di bawah ini adalah contoh jika Anda ingin meng-cache ulang aset dari origin Anda.
-              // if (requestUrl.origin === self.location.origin) {
-              //   const responseToCache = networkResponse.clone();
-              //   caches.open(CACHE_NAME)
-              //     .then(cache => {
-              //       cache.put(event.request, responseToCache);
-              //     });
-              // }
-            }
-            return networkResponse;
-          }).catch(error => {
-            console.error('Service worker: Fetch failed for:', event.request.url, error);
-            // Anda bisa mengembalikan halaman offline kustom di sini jika fetch gagal
-            // return caches.match('/offline.html');
-            throw error; // Lemparkan error agar promise ditolak jika fetch gagal
-          });
+      fetch(event.request)
+        .then(networkResp => {
+          // Update cache dengan respons terbaru
+          const clone = networkResp.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          return networkResp;
         })
+        .catch(() => caches.match(event.request))
     );
-  } else {
-    // Untuk metode selain GET (misalnya POST ke API Anda sendiri yang tidak diabaikan),
-    // biarkan langsung ke network.
-    // Jika Anda memiliki API di origin yang sama dan ingin SW mengabaikannya juga, tambahkan ke IGNORED_HOSTNAMES
-    // atau tambahkan logika spesifik di sini.
-    // console.log('Service worker: Passing through non-GET request:', event.request.url, event.request.method);
-    return; // Tidak memanggil event.respondWith()
+    return;
   }
+
+  // 3) Cache-first untuk aset lain
+  event.respondWith(
+    caches.match(event.request).then(cached => {
+      return cached || fetch(event.request).then(networkResp => {
+        // (Opsional) cache dynamic assets:
+        // if (networkResp.ok && networkResp.type === 'basic') {
+        //   const copy = networkResp.clone();
+        //   caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        // }
+        return networkResp;
+      });
+    })
+  );
 });
