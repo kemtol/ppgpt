@@ -1,11 +1,11 @@
 // service-worker.js
 
-const CACHE_NAME = 'ppu-gpt-cache-20250529';
+const CACHE_NAME = 'ppu-gpt-cache-20250604';
 const urlsToCache = [
   './',
   'index.html',
-  'app.js?v=20250529',
-  'style.css?v=20250507',
+  'app.js?v=20250604',
+  'style.css?v=20250604',
   'favicon-32x32.png',
   'favicon-16x16.png',
   'apple-touch-icon.png',

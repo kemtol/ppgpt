@@ -80,6 +80,9 @@ html, body {
   scrollbar-color: #303030 #111;
 }
 
+#take-photo{
+  font-size: 1.5rem;position: absolute;top: 0;transform: translate(-150%,-59%);left: 50%;border: solid 2px #dddd;border-radius: 50%;width: 3rem;height: 3rem;background: black;
+}
 .chat-bubble {
   font-family: var(--font-family-base);
   font-size: var(--font-size-body);
